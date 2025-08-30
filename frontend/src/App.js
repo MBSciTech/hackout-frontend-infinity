@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import OrganizationForm from './pages/OrganizationForm';
+import SolarPanel from './3dModels/SolarPanel';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -19,6 +20,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/qna" element={<OrganizationForm/>} />
+          <Route path="/Solar" element={<SolarPanel/>} />
+
         </Routes>
         <Footer/>
       </div>

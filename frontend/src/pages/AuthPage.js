@@ -8,7 +8,7 @@ const AuthPage = () => {
     password: '',
     confirmPassword: ''
   });
-
+const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
   const toggleForm = () => {
     setIsLogin(!isLogin);
   };

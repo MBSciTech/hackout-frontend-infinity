@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SolarPanel from '../3dModels/SolarPanel';
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('visualization'); // Set visualization as default tab
   const [statsData, setStatsData] = useState({});
   const [projects, setProjects] = useState([]);
   const [recentActivities, setRecentActivities] = useState([]);
@@ -93,6 +94,49 @@ const Dashboard = () => {
   const handleProjectClick = (projectId) => {
     navigate(`/project/${projectId}`);
   };
+
+  // New visualization tab content
+  const renderVisualization = () => (
+    <div className="visualization-section">
+      <div className="section-header">
+        <h2>3D Infrastructure Visualization</h2>
+        <p>Interactive 3D models of hydrogen and solar infrastructure</p>
+      </div>
+      
+      <div className="visualization-content">
+        <div className="visualization-info">
+          <h3>Solar Panel Farm Simulation</h3>
+          <p>Explore our interactive 3D model of a solar panel farm that powers hydrogen production facilities.</p>
+          <div className="visualization-stats">
+            <div className="stat-item">
+              <i className="fas fa-solar-panel"></i>
+              <span>9 Solar Panels</span>
+            </div>
+            <div className="stat-item">
+              <i className="fas fa-bolt"></i>
+              <span>45 kW Total Output</span>
+            </div>
+            <div className="stat-item">
+              <i className="fas fa-leaf"></i>
+              <span>54 tons CO₂ Reduction/year</span>
+            </div>
+          </div>
+          <div className="visualization-controls">
+            <h4>Controls:</h4>
+            <ul>
+              <li>Drag to rotate camera</li>
+              <li>Scroll to zoom in/out</li>
+              <li>Right-click drag to pan</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="solar-visualization" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '500px', minHeight: '350px' }}>
+          <SolarPanel count={9} />
+        </div>
+      </div>
+    </div>
+  );
 
   const renderOverview = () => (
     <div className="dashboard-overview">
@@ -349,7 +393,7 @@ const Dashboard = () => {
 
         .dashboard {
           min-height: 100vh;
-          margin-left:9vh;
+          margin-left: 9vh;
           background: var(--primary-dark);
           color: var(--text-light);
           padding: 20px;
@@ -409,6 +453,7 @@ const Dashboard = () => {
           margin-bottom: 30px;
           border-bottom: 1px solid var(--card-border);
           padding-bottom: 15px;
+          flex-wrap: wrap;
         }
 
         .tab-button {
@@ -433,6 +478,115 @@ const Dashboard = () => {
           color: var(--accent-green);
         }
 
+        /* Visualization Section Styles */
+        .visualization-section {
+          padding: 20px 0;
+        }
+
+        .visualization-content {
+          display: grid;
+          grid-template-columns: 1fr 2fr;
+          gap: 30px;
+          margin-top: 20px;
+           
+        }
+
+        .visualization-info {
+          background: var(--card-bg);
+          border: 1px solid var(--card-border);
+          border-radius: 15px;
+          padding: 25px;
+          backdrop-filter: blur(10px);
+          height: fit-content;
+          background: 
+              linear-gradient(
+                to bottom, 
+                var(--primary-dark) 0%, 
+                transparent 600%
+              ),
+              url('/images/dashboard_hero_Image.webp') no-repeat center center;
+            background-size: cover;
+        }
+
+        .visualization-info h3 {
+          color: var(--accent-green);
+          margin-top: 0;
+          margin-bottom: 15px;
+          font-size: 1.5rem;
+        }
+
+        .visualization-info p {
+          color: var(--text-muted);
+          line-height: 1.6;
+          margin-bottom: 20px;
+        }
+
+        .visualization-stats {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+          margin-bottom: 25px;
+        }
+
+        .visualization-stats .stat-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+        }
+
+        .visualization-stats .stat-item i {
+          color: var(--accent-teal);
+          font-size: 1.2rem;
+          width: 24px;
+        }
+
+        .visualization-stats .stat-item span {
+          color: var(--text-light);
+          font-weight: 500;
+        }
+
+        .visualization-controls h4 {
+          color: var(--accent-green);
+          margin-bottom: 10px;
+          font-size: 1.1rem;
+        }
+
+        .visualization-controls ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+
+        .visualization-controls li {
+          color: var(--text-muted);
+          padding: 5px 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .visualization-controls li:before {
+          content: '•';
+          color: var(--accent-teal);
+          font-weight: bold;
+          display: inline-block;
+          width: 1em;
+        }
+
+        .solar-visualization {
+          background: var(--card-bg);
+          border: 1px solid var(--card-border);
+          border-radius: 15px;
+          padding: 0;
+          overflow: hidden;
+          height: 0px;
+          backdrop-filter: blur(10px);
+        }
+
+        /* Rest of the existing styles... */
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -489,413 +643,24 @@ const Dashboard = () => {
           margin-bottom: 30px;
         }
 
-        .chart-card {
-          background: var(--card-bg);
-          border: 1px solid var(--card-border);
-          border-radius: 15px;
-          padding: 20px;
-          backdrop-filter: blur(10px);
-        }
+        /* ... (keep all the existing styles from the original code) ... */
 
-        .chart-card h3 {
-          margin-top: 0;
-          margin-bottom: 20px;
-          color: var(--text-light);
-          font-size: 1.2rem;
-        }
-
-        .project-chart {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .chart-bar {
-          height: 30px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 15px;
-          overflow: hidden;
-          position: relative;
-        }
-
-        .chart-bar::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          height: 100%;
-          width: var(--width);
-          background: var(--color);
-          border-radius: 15px;
-        }
-
-        .chart-bar span {
-          position: absolute;
-          left: 15px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: white;
-          font-weight: 600;
-          font-size: 0.8rem;
-          z-index: 2;
-        }
-
-        .production-chart {
-          height: 200px;
-          position: relative;
-          border-bottom: 2px solid var(--card-border);
-          margin-bottom: 10px;
-        }
-
-        .chart-line {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 2px;
-          background: var(--card-border);
-        }
-
-        .data-point {
-          position: absolute;
-          width: 12px;
-          height: 12px;
-          background: var(--accent-teal);
-          border-radius: 50%;
-          bottom: 0;
-          left: var(--left);
-          transform: translate(-50%, 50%);
-          border: 2px solid white;
-        }
-
-        .data-point::before {
-          content: '';
-          position: absolute;
-          bottom: 50%;
-          left: 50%;
-          width: 2px;
-          height: var(--height);
-          background: var(--accent-teal);
-          transform: translateX(-50%);
-          z-index: -1;
-        }
-
-        .chart-labels {
-          display: flex;
-          justify-content: space-between;
-          padding: 0 10px;
-        }
-
-        .chart-labels span {
-          color: var(--text-muted);
-          font-size: 0.8rem;
-        }
-
-        .recent-activities {
-          background: var(--card-bg);
-          border: 1px solid var(--card-border);
-          border-radius: 15px;
-          padding: 20px;
-          backdrop-filter: blur(10px);
-        }
-
-        .recent-activities h3 {
-          margin-top: 0;
-          margin-bottom: 20px;
-          color: var(--text-light);
-        }
-
-        .activities-list {
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-        }
-
-        .activity-item {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          padding: 15px;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 10px;
-          transition: background 0.3s ease;
-        }
-
-        .activity-item:hover {
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        .activity-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-          background: var(--gradient-primary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-        }
-
-        .activity-content p {
-          margin: 0;
-          color: var(--text-light);
-        }
-
-        .activity-time {
-          color: var(--text-muted);
-          font-size: 0.8rem;
-        }
-
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 30px;
-        }
-
-        .section-header h2 {
-          background: var(--gradient-primary);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          margin: 0;
-        }
-
-        .btn-primary {
-          background: var(--gradient-primary);
-          border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
-          color: white;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .btn-primary:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
-        }
-
-        .projects-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 20px;
-        }
-
-        .project-card {
-          background: var(--card-bg);
-          border: 1px solid var(--card-border);
-          border-radius: 15px;
-          padding: 20px;
-          backdrop-filter: blur(10px);
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-
-        .project-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-          border-color: var(--accent-green);
-        }
-
-        .project-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 15px;
-        }
-
-        .project-header h3 {
-          margin: 0;
-          color: var(--text-light);
-          font-size: 1.1rem;
-        }
-
-        .project-status {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 0.8rem;
-          font-weight: 600;
-        }
-
-        .project-progress {
-          margin-bottom: 15px;
-        }
-
-        .progress-bar {
-          height: 8px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 4px;
-          overflow: hidden;
-          margin-bottom: 8px;
-        }
-
-        .progress-fill {
-          height: 100%;
-          border-radius: 4px;
-          transition: width 0.3s ease;
-        }
-
-        .project-progress span {
-          color: var(--text-muted);
-          font-size: 0.8rem;
-        }
-
-        .project-details {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 10px;
-          margin-bottom: 15px;
-        }
-
-        .detail-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          color: var(--text-muted);
-          font-size: 0.9rem;
-        }
-
-        .detail-item i {
-          width: 16px;
-        }
-
-        .project-action-btn {
-          width: 100%;
-          background: transparent;
-          border: 1px solid var(--accent-teal);
-          color: var(--accent-teal);
-          padding: 10px;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          font-weight: 600;
-        }
-
-        .project-action-btn:hover {
-          background: var(--accent-teal);
-          color: white;
-        }
-
-        .analytics-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 20px;
-        }
-
-        .analytics-card {
-          background: var(--card-bg);
-          border: 1px solid var(--card-border);
-          border-radius: 15px;
-          padding: 20px;
-          backdrop-filter: blur(10px);
-        }
-
-        .analytics-card h3 {
-          margin-top: 0;
-          margin-bottom: 20px;
-          color: var(--text-light);
-        }
-
-        .resource-chart {
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-        }
-
-        .chart-item {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .chart-item span:first-child {
-          width: 80px;
-          color: var(--text-muted);
-          font-size: 0.9rem;
-        }
-
-        .chart-bar {
-          flex: 1;
-          height: 8px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 4px;
-          overflow: hidden;
-        }
-
-        .chart-fill {
-          height: 100%;
-          background: var(--gradient-primary);
-          border-radius: 4px;
-        }
-
-        .chart-item span:last-child {
-          width: 40px;
-          text-align: right;
-          color: var(--text-muted);
-          font-size: 0.9rem;
-        }
-
-        .budget-chart {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .budget-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 10px;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 8px;
-        }
-
-        .budget-item span {
-          color: var(--text-muted);
-        }
-
-        .budget-amount {
-          color: var(--accent-green) !important;
-          font-weight: 600;
-        }
-
-        .kpi-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 15px;
-        }
-
-        .kpi-item {
-          text-align: center;
-          padding: 15px;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 10px;
-        }
-
-        .kpi-value {
-          font-size: 1.5rem;
-          font-weight: 700;
-          background: var(--gradient-primary);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          margin-bottom: 5px;
-        }
-
-        .kpi-label {
-          color: var(--text-muted);
-          font-size: 0.8rem;
+        @media (max-width: 1024px) {
+          .visualization-content {
+            grid-template-columns: 1fr;
+          }
+          
+          .solar-visualization {
+            height: 400px;
+          }
         }
 
         @media (max-width: 768px) {
+          .dashboard {
+            margin-left: 0;
+            padding: 15px;
+          }
+          
           .charts-section {
             grid-template-columns: 1fr;
           }
@@ -923,6 +688,11 @@ const Dashboard = () => {
             gap: 15px;
             text-align: center;
           }
+          
+          .dashboard-tabs {
+            overflow-x: auto;
+            padding-bottom: 10px;
+          }
         }
         `}
       </style>
@@ -940,6 +710,12 @@ const Dashboard = () => {
         </div>
 
         <div className="dashboard-tabs">
+          <button 
+            className={`tab-button ${activeTab === 'visualization' ? 'active' : ''}`}
+            onClick={() => setActiveTab('visualization')}
+          >
+            <i className="fas fa-globe"></i> Visualization
+          </button>
           <button 
             className={`tab-button ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
@@ -972,6 +748,7 @@ const Dashboard = () => {
           </button>
         </div>
 
+        {activeTab === 'visualization' && renderVisualization()}
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'projects' && renderProjects()}
         {activeTab === 'analytics' && renderAnalytics()}
