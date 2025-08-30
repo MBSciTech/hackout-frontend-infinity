@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import * as Chart from 'chart.js';
 import SolarPanel from '../3dModels/SolarPanel';
 import WindPower from '../3dModels/WindPower';
+import DashboardOverview from '../components/DashboardOverview'; // Import the new component
+import DashboardVisualization from '../components//DashboardVisualization'; // Import the new component
+import DashboardProjects from '../components//DashboardProjects'; // Import the new component
+import DashboardAnalytics from '../components//DashboardAnalytics'; // Import the new component
+import DashboardResources from '../components//DashboardResources'; // Import the new component
+import DashboardReports from '../components//DashboardReports'; // Import the new component
 
 const Dashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
@@ -19,23 +24,23 @@ const Dashboard = () => {
 
     useEffect(() => {
         // Register Chart.js components
-        Chart.Chart.register(
-            Chart.CategoryScale,
-            Chart.LinearScale,
-            Chart.PointElement,
-            Chart.LineElement,
-            Chart.BarElement,
-            Chart.ArcElement,
-            Chart.LineController, // Add this
-            Chart.BarController,  // Add this
-            Chart.DoughnutController, // Add this
-            Chart.RadarController, // Add this
-            Chart.RadialLinearScale, // Add this
-            Chart.Title,
-            Chart.Tooltip,
-            Chart.Legend,
-            Chart.ArcElement
-        );
+        // Chart.Chart.register(
+        //     Chart.CategoryScale,
+        //     Chart.LinearScale,
+        //     Chart.PointElement,
+        //     Chart.LineElement,
+        //     Chart.BarElement,
+        //     Chart.ArcElement,
+        //     Chart.LineController, // Add this
+        //     Chart.BarController,  // Add this
+        //     Chart.DoughnutController, // Add this
+        //     Chart.RadarController, // Add this
+        //     Chart.RadialLinearScale, // Add this
+        //     Chart.Title,
+        //     Chart.Tooltip,
+        //     Chart.Legend,
+        //     Chart.ArcElement
+        // );
         // Fetch data from localStorage
         const fetchDataFromStorage = () => {
             try {
@@ -74,130 +79,130 @@ const Dashboard = () => {
     }, []);
 
     useEffect(() => {
-        if (dashboardData && activeTab === 'analytics') {
-            createCharts();
-        }
+        // if (dashboardData && activeTab === 'analytics') {
+        //     createCharts();
+        // }
     }, [dashboardData, activeTab]);
 
-    const createCharts = () => {
-        if (!dashboardData?.landoptimizer?.suggested_locations?.[0]) return;
+    // const createCharts = () => {
+    //     if (!dashboardData?.landoptimizer?.suggested_locations?.[0]) return;
 
-        const location = dashboardData.landoptimizer.suggested_locations[0];
+    //     const location = dashboardData.landoptimizer.suggested_locations[0];
         
-        // Destroy existing charts
-        Object.values(chartInstances.current).forEach(chart => {
-            if (chart) chart.destroy();
-        });
+    //     // Destroy existing charts
+    //     Object.values(chartInstances.current).forEach(chart => {
+    //         if (chart) chart.destroy();
+    //     });
 
-        // Production Capacity Chart
-        if (productionChartRef.current) {
-            const ctx = productionChartRef.current.getContext('2d');
-            chartInstances.current.production = new Chart.Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Monthly Production (tons)',
-                        data: [3500, 4200, 4800, 4100, 4600, 5000],
-                        borderColor: '#67C090',
-                        backgroundColor: 'rgba(103, 192, 144, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        }
+    //     // Production Capacity Chart
+    //     if (productionChartRef.current) {
+    //         const ctx = productionChartRef.current.getContext('2d');
+    //         chartInstances.current.production = new Chart.Chart(ctx, {
+    //             type: 'line',
+    //             data: {
+    //                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    //                 datasets: [{
+    //                     label: 'Monthly Production (tons)',
+    //                     data: [3500, 4200, 4800, 4100, 4600, 5000],
+    //                     borderColor: '#67C090',
+    //                     backgroundColor: 'rgba(103, 192, 144, 0.1)',
+    //                     tension: 0.4,
+    //                     fill: true
+    //                 }]
+    //             },
+    //             options: {
+    //                 responsive: true,
+    //                 maintainAspectRatio: false,
+    //                 plugins: {
+    //                     legend: { display: false }
+    //                 },
+    //                 scales: {
+    //                     y: { beginAtZero: true }
+    //                 }
+    //             }
+    //         });
+    //     }
 
-        // Cost Breakdown Chart
-        if (costChartRef.current) {
-            const ctx = costChartRef.current.getContext('2d');
-            const costData = location.cost_breakdown;
-            chartInstances.current.cost = new Chart.Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(costData).map(key => key.replace(/_/g, ' ').replace(/cost/g, '').trim()),
-                    datasets: [{
-                        data: Object.values(costData).map(val => parseInt(val.replace(/[^\d]/g, ''))),
-                        backgroundColor: ['#DDF4E7', '#67C090', '#26667F', '#124170', '#8FD3B0', '#4A90A4']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
-            });
-        }
+    //     // Cost Breakdown Chart
+    //     if (costChartRef.current) {
+    //         const ctx = costChartRef.current.getContext('2d');
+    //         const costData = location.cost_breakdown;
+    //         chartInstances.current.cost = new Chart.Chart(ctx, {
+    //             type: 'doughnut',
+    //             data: {
+    //                 labels: Object.keys(costData).map(key => key.replace(/_/g, ' ').replace(/cost/g, '').trim()),
+    //                 datasets: [{
+    //                     data: Object.values(costData).map(val => parseInt(val.replace(/[^\d]/g, ''))),
+    //                     backgroundColor: ['#DDF4E7', '#67C090', '#26667F', '#124170', '#8FD3B0', '#4A90A4']
+    //                 }]
+    //             },
+    //             options: {
+    //                 responsive: true,
+    //                 maintainAspectRatio: false,
+    //                 plugins: {
+    //                     legend: { position: 'bottom' }
+    //                 }
+    //             }
+    //         });
+    //     }
 
-        // Revenue Chart
-        if (revenueChartRef.current) {
-            const ctx = revenueChartRef.current.getContext('2d');
-            const revenueData = location.revenue_estimation;
-            chartInstances.current.revenue = new Chart.Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Domestic Sales', 'Export Revenue', 'Carbon Credits'],
-                    datasets: [{
-                        label: 'Revenue (Million INR)',
-                        data: [
-                            parseInt(revenueData.domestic_sales_revenue.replace(/[^\d]/g, '')),
-                            parseInt(revenueData.export_revenue.replace(/[^\d]/g, '')),
-                            parseInt(revenueData.carbon_credit_revenue.replace(/[^\d]/g, ''))
-                        ],
-                        backgroundColor: ['#67C090', '#26667F', '#124170']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-        }
+    //     // Revenue Chart
+    //     if (revenueChartRef.current) {
+    //         const ctx = revenueChartRef.current.getContext('2d');
+    //         const revenueData = location.revenue_estimation;
+    //         chartInstances.current.revenue = new Chart.Chart(ctx, {
+    //             type: 'bar',
+    //             data: {
+    //                 labels: ['Domestic Sales', 'Export Revenue', 'Carbon Credits'],
+    //                 datasets: [{
+    //                     label: 'Revenue (Million INR)',
+    //                     data: [
+    //                         parseInt(revenueData.domestic_sales_revenue.replace(/[^\d]/g, '')),
+    //                         parseInt(revenueData.export_revenue.replace(/[^\d]/g, '')),
+    //                         parseInt(revenueData.carbon_credit_revenue.replace(/[^\d]/g, ''))
+    //                     ],
+    //                     backgroundColor: ['#67C090', '#26667F', '#124170']
+    //                 }]
+    //             },
+    //             options: {
+    //                 responsive: true,
+    //                 maintainAspectRatio: false,
+    //                 plugins: {
+    //                     legend: { display: false }
+    //                 }
+    //             }
+    //         });
+    //     }
 
-        // Resource Utilization Chart
-        if (resourceChartRef.current) {
-            const ctx = resourceChartRef.current.getContext('2d');
-            const resources = location.resource_sizing;
-            chartInstances.current.resource = new Chart.Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ['Solar Panels', 'Wind Turbines', 'Electrolyzers', 'Storage Capacity', 'Distribution'],
-                    datasets: [{
-                        label: 'Resource Utilization %',
-                        data: [85, 92, 78, 88, 75],
-                        borderColor: '#26667F',
-                        backgroundColor: 'rgba(38, 102, 127, 0.2)',
-                        pointBackgroundColor: '#67C090'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 100
-                        }
-                    }
-                }
-            });
-        }
-    };
+    //     // Resource Utilization Chart
+    //     if (resourceChartRef.current) {
+    //         const ctx = resourceChartRef.current.getContext('2d');
+    //         const resources = location.resource_sizing;
+    //         chartInstances.current.resource = new Chart.Chart(ctx, {
+    //             type: 'radar',
+    //             data: {
+    //                 labels: ['Solar Panels', 'Wind Turbines', 'Electrolyzers', 'Storage Capacity', 'Distribution'],
+    //                 datasets: [{
+    //                     label: 'Resource Utilization %',
+    //                     data: [85, 92, 78, 88, 75],
+    //                     borderColor: '#26667F',
+    //                     backgroundColor: 'rgba(38, 102, 127, 0.2)',
+    //                     pointBackgroundColor: '#67C090'
+    //                 }]
+    //             },
+    //             options: {
+    //                 responsive: true,
+    //                 maintainAspectRatio: false,
+    //                 scales: {
+    //                     r: {
+    //                         beginAtZero: true,
+    //                         max: 100
+    //                     }
+    //                 }
+    //             }
+    //         });
+    //     }
+    // };
 
     const getProjectsFromData = () => {
         if (!dashboardData?.landoptimizer?.suggested_locations) return [];
@@ -1638,82 +1643,14 @@ const Dashboard = () => {
                     </button>
                 </div>
 
-                {activeTab === 'overview' && renderOverview()}
-                {activeTab === 'visualization' && renderVisualization()}
-                {activeTab === 'projects' && renderProjects()}
-                {activeTab === 'analytics' && renderAnalytics()}
+                {activeTab === 'overview' && <DashboardOverview dashboardData={dashboardData} />}
+                {activeTab === 'visualization' && <DashboardVisualization dashboardData={dashboardData} />}
+                {activeTab === 'projects' && <DashboardProjects dashboardData={dashboardData} />}
+                {activeTab === 'analytics' && <DashboardAnalytics dashboardData={dashboardData} />}
 
-                {activeTab === 'resources' && (
-                    <div className="resources-section">
-                        <div className="section-header">
-                            <h2>Resource Management</h2>
-                            <p>Comprehensive resource allocation and optimization</p>
-                        </div>
-                        
-                        {dashboardData?.landoptimizer?.suggested_locations && (
-                            <div className="resource-overview-grid">
-                                <div className="resource-card card">
-                                    <h3>Energy Resources</h3>
-                                    <div className="energy-breakdown">
-                                        <div className="energy-item">
-                                            <i className="fas fa-solar-panel" style={{ color: '#67C090' }}></i>
-                                            <span>Solar Capacity: {dashboardData.landoptimizer.suggested_locations[0].resource_sizing.solar_panels_required}</span>
-                                        </div>
-                                        <div className="energy-item">
-                                            <i className="fas fa-wind" style={{ color: '#26667F' }}></i>
-                                            <span>Wind Capacity: {dashboardData.landoptimizer.suggested_locations[0].resource_sizing.wind_turbines_required}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="efficiency-card card">
-                                    <h3>Production Efficiency</h3>
-                                    <div className="efficiency-metrics">
-                                        <div className="metric">
-                                            <span className="metric-value">92%</span>
-                                            <span className="metric-label">Energy Conversion</span>
-                                        </div>
-                                        <div className="metric">
-                                            <span className="metric-value">85%</span>
-                                            <span className="metric-label">Capacity Utilization</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
+                {activeTab === 'resources' && <DashboardResources dashboardData={dashboardData} />}
 
-                {activeTab === 'reports' && (
-                    <div className="reports-section">
-                        <div className="section-header">
-                            <h2>Reports & Documentation</h2>
-                            <p>Comprehensive project documentation and analysis reports</p>
-                        </div>
-                        
-                        {dashboardData?.policy && (
-                            <div className="policy-report card">
-                                <h3>Government Policy Analysis</h3>
-                                <div className="policy-overview">
-                                    <h4>Location: {dashboardData.policy.forlocation}</h4>
-                                    <p>{dashboardData.policy.schem}</p>
-                                    <div className="benefits-grid">
-                                        {dashboardData.policy.benifits.map((benefit, index) => (
-                                            <div key={index} className="benefit-card">
-                                                <i className="fas fa-award" style={{ color: '#67C090' }}></i>
-                                                <span>{benefit}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <a href={dashboardData.policy.websitelink} target="_blank" rel="noopener noreferrer" className="policy-link">
-                                        <i className="fas fa-external-link-alt"></i>
-                                        View Official Documentation
-                                    </a>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
+                {activeTab === 'reports' && <DashboardReports dashboardData={dashboardData} />}
             </div>
 
             <style jsx>{`
