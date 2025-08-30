@@ -1475,7 +1475,7 @@ const LandingPage = () => {
       <div id="atom-container"></div>
       <div id="background-atoms"></div>
       <div className="bg-animation"></div>
-      
+
       {/* Hero Section */}
       <section className="hero">
         <div className="container">
@@ -1603,15 +1603,15 @@ const LandingPage = () => {
                 <h3 className="use-case-title">Transportation Fuel</h3>
                 <p className="use-case-desc">Power fuel cell vehicles with zero emissions and fast refueling capabilities for a sustainable transportation future.</p>
               </div>
-            </div>
+              </div>
             <div className="col-md-6">
               <div className="use-case-item animate-on-scroll" ref={el => useCasesRef.current[1] = el}>
                 <HydrogenAtom className="use-case-atom" size={35} />
                 <i className="fas fa-industry use-case-icon"></i>
                 <h3 className="use-case-title">Industrial Processes</h3>
                 <p className="use-case-desc">Replace fossil fuels in manufacturing, refining, and chemical production with clean hydrogen alternatives.</p>
-              </div>
             </div>
+              </div>
             <div className="col-md-6">
               <div className="use-case-item animate-on-scroll" ref={el => useCasesRef.current[2] = el}>
                 <HydrogenAtom className="use-case-atom" size={35} />
@@ -1651,7 +1651,7 @@ const LandingPage = () => {
                     <i className={`${method.icon} method-icon`}></i>
                     <h4 className="method-name">{method.name}</h4>
                     <span className="method-efficiency">{method.efficiency}</span>
-                  </div>
+            </div>
                   <p className="method-description">{method.description}</p>
                   <div className="method-details">
                     <div className="detail-group">
@@ -1669,13 +1669,13 @@ const LandingPage = () => {
                           <li key={i}>{dis}</li>
                         ))}
                       </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                        </div>
+                      </div>
+                        </div>
+                      </div>
             ))}
-          </div>
-        </div>
+                        </div>
+                      </div>
       </section>
 
       {/* Process Flow Section */}
@@ -1684,38 +1684,38 @@ const LandingPage = () => {
           <div className="section-title">
             <h2>Our Production Process</h2>
             <p>From renewable energy to clean hydrogen fuel</p>
-          </div>
+                        </div>
           <div className="row">
             <div className="col-md-3">
               <div className="process-step animate-on-scroll">
                 <HydrogenAtom className="process-atom" size={40} />
                 <div className="process-icon">
                   <i className="fas fa-sun"></i>
-                </div>
+                      </div>
                 <h3 className="process-title">Renewable Energy</h3>
                 <p className="process-desc">Harness solar and wind power to generate clean electricity</p>
-              </div>
-            </div>
+                    </div>
+                    </div>
             <div className="col-md-3">
               <div className="process-step animate-on-scroll">
                 <HydrogenAtom className="process-atom" size={40} />
                 <div className="process-icon">
                   <i className="fas fa-tint"></i>
-                </div>
+                  </div>
                 <h3 className="process-title">Water Supply</h3>
                 <p className="process-desc">Source and purify water for the electrolysis process</p>
-              </div>
-            </div>
+                      </div>
+                      </div>
             <div className="col-md-3">
               <div className="process-step animate-on-scroll">
                 <HydrogenAtom className="process-atom" size={40} />
                 <div className="process-icon">
                   <i className="fas fa-bolt"></i>
-                </div>
+                      </div>
                 <h3 className="process-title">Electrolysis</h3>
                 <p className="process-desc">Split water molecules into hydrogen and oxygen using electricity</p>
-              </div>
-            </div>
+                    </div>
+                  </div>
             <div className="col-md-3">
               <div className="process-step animate-on-scroll">
                 <HydrogenAtom className="process-atom" size={40} />
@@ -1765,7 +1765,7 @@ const LandingPage = () => {
           <p>Start your journey towards sustainable energy solutions today. Our team of experts is ready to help you implement green hydrogen technology for your business needs.</p>
           <button className="btn-primary-custom" onClick={handleButtonClick}>
             Get Started Now <i className="fas fa-arrow-right ms-2"></i>
-          </button>
+            </button>
         </div>
       </section>
 
