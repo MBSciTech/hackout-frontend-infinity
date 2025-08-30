@@ -1240,6 +1240,7 @@ const Dashboard = () => {
                     display: flex;
                     flex-direction: column;
                     gap: 20px;
+                    
                 }
 
                 .model-card {
@@ -1254,7 +1255,7 @@ const Dashboard = () => {
                 }
 
                 .model-container {
-                    height: 300px;
+                    height: 30px;
                     border-radius: 12px;
                     overflow: hidden;
                     background: linear-gradient(135deg, var(--primary-light), var(--white-pure));
@@ -1668,6 +1669,7 @@ const Dashboard = () => {
                     background: rgba(255, 255, 255, 0.6);
                     border-radius: 8px;
                     font-weight: 500;
+                    font-size : 1.4rem;
                 }
 
                 .resource-overview-grid {
@@ -1679,7 +1681,7 @@ const Dashboard = () => {
                 .resource-card h3, .efficiency-card h3 {
                     color: var(--primary-darker);
                     margin-bottom: 20px;
-                    font-size: 1.3rem;
+                    font-size: 3rem;
                     font-weight: 600;
                 }
 

@@ -73,7 +73,7 @@ const DashboardProjects = ({ dashboardData }) => {
                                 <i className={getInvestmentIcon(key)} style={{ color: getInvestmentColor(index) }}></i>
                             </div>
                             <div className="investment-content">
-                                <h4>{value}</h4>
+                                <h4>₹ {parseFloat(value)}Cr</h4>
                                 <p>{key.replace(/_/g, ' ').replace(/cost/g, '').trim()}</p>
                             </div>
                         </div>
@@ -97,7 +97,7 @@ const DashboardProjects = ({ dashboardData }) => {
                                 </div>
                                 <div className="machine-stat">
                                     <span className="label">Cost:</span>
-                                    <span className="value">{machine.cost}</span>
+                                    <span className="value">₹ {parseFloat(machine.cost)}Cr</span>
                                 </div>
                             </div>
                         </div>
