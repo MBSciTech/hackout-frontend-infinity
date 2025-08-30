@@ -2,9 +2,12 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Dashboard from './pages/Dashboard';
 import LandingPage from './pages/LandingPage';
+import AuthPage from './pages/AuthPage';
+import OrganizationForm from './pages/OrganizationForm';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function App() {
   return (
@@ -14,6 +17,8 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/qna" element={<OrganizationForm/>} />
         </Routes>
         <Footer/>
       </div>

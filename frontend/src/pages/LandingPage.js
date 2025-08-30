@@ -1,15 +1,273 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for default markers in Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Register ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
 
 const LandingPage = () => {
   const [mapExpanded, setMapExpanded] = useState(false);
   const [countersAnimated, setCountersAnimated] = useState(false);
   const statsRef = useRef(null);
+  const navigate = useNavigate();
+  
+  // Refs for GSAP animations
+  const heroContentRef = useRef(null);
+  const heroVisualRef = useRef(null);
+  const featureCardsRef = useRef([]);
+  const statsRefs = useRef([]);
+  const useCasesRef = useRef([]);
+  const sectionTitleRef = useRef(null);
+  const ctaRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
+  const threeDModelRef = useRef(null);
+
+  // Initialize Leaflet map
+  useEffect(() => {
+    if (mapExpanded && mapContainerRef.current && !mapRef.current) {
+      // Initialize map
+      mapRef.current = L.map(mapContainerRef.current, {
+        zoomControl: false,
+        attributionControl: false
+      }).setView([51.505, -0.09], 13);
+      
+      // Add tile layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+      }).addTo(mapRef.current);
+      
+      // Add custom markers
+      const hydrogenIcon = L.divIcon({
+        className: 'hydrogen-marker',
+        html: '<div class="pulse-dot"></div><i class="fas fa-industry"></i>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+      
+      // Sample markers for hydrogen facilities
+      const facilities = [
+        { lat: 51.505, lng: -0.09, name: 'London Hydrogen Plant' },
+        { lat: 51.51, lng: -0.08, name: 'Thames Hydrogen Hub' },
+        { lat: 51.50, lng: -0.10, name: 'Green Energy Station' },
+        { lat: 51.515, lng: -0.095, name: 'Eco Fuel Center' }
+      ];
+      
+      facilities.forEach(facility => {
+        L.marker([facility.lat, facility.lng], { icon: hydrogenIcon })
+          .addTo(mapRef.current)
+          .bindPopup(facility.name);
+      });
+      
+      // Add zoom control
+      L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
+      
+      // Fit map to show all markers
+      const group = new L.featureGroup(facilities.map(f => L.marker([f.lat, f.lng])));
+      mapRef.current.fitBounds(group.getBounds().pad(0.1));
+    }
+    
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [mapExpanded]);
+
+  // 3D model animation with GSAP
+  useEffect(() => {
+    if (threeDModelRef.current) {
+      gsap.to(threeDModelRef.current, {
+        rotationY: 360,
+        duration: 20,
+        repeat: -1,
+        ease: "none"
+      });
+    }
+  }, []);
+
+  // Initialize GSAP animations
+  useEffect(() => {
+    // Hero section animations
+    const heroTl = gsap.timeline();
+    heroTl.fromTo(heroContentRef.current, 
+      { opacity: 0, y: 100 },
+      { 
+        opacity: 1, 
+        y: 0, 
+        duration: 1.5,
+        ease: "power3.out",
+      }
+    ).fromTo(heroVisualRef.current, 
+      { opacity: 0, x: 100, rotationY: 180 },
+      { 
+        opacity: 1, 
+        x: 0, 
+        rotationY: 0,
+        duration: 1.5,
+        ease: "power3.out",
+      }, "-=1"
+    );
+    
+    // Animated background elements
+    gsap.to('.floating-particle', {
+      y: -20,
+      x: "random(-20, 20)",
+      rotation: "random(-30, 30)",
+      duration: "random(3, 5)",
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+      stagger: 0.2
+    });
+
+    // Feature cards animation
+    gsap.fromTo(featureCardsRef.current, 
+      { 
+        opacity: 0, 
+        y: 100,
+        rotationX: -45
+      },
+      {
+        opacity: 1,
+        y: 0,
+        rotationX: 0,
+        duration: 1.2,
+        stagger: 0.3,
+        scrollTrigger: {
+          trigger: '.features',
+          start: 'top 85%',
+          toggleActions: 'play none none reverse'
+        }
+      }
+    );
+    
+    // Section title animations
+    gsap.fromTo('.section-title', 
+      { opacity: 0, y: 80, skewY: 5 },
+      {
+        opacity: 1,
+        y: 0,
+        skewY: 0,
+        duration: 1.2,
+        stagger: 0.2,
+        scrollTrigger: {
+          trigger: '.section-title',
+          start: 'top 90%',
+          toggleActions: 'play none none reverse'
+        }
+      }
+    );
+    
+    // Stats counter animation
+    gsap.fromTo(statsRefs.current, 
+      { 
+        opacity: 0, 
+        y: 50,
+        scale: 0.8 
+      },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 1,
+        stagger: 0.2,
+        scrollTrigger: {
+          trigger: '.stats',
+          start: 'top 85%',
+          toggleActions: 'play none none reverse'
+        }
+      }
+    );
+    
+    // Use cases animation
+    gsap.fromTo(useCasesRef.current, 
+      { 
+        opacity: 0, 
+        x: -100,
+        rotationZ: -5 
+      },
+      {
+        opacity: 1,
+        x: 0,
+        rotationZ: 0,
+        duration: 1.1,
+        stagger: 0.25,
+        scrollTrigger: {
+          trigger: '.use-cases',
+          start: 'top 85%',
+          toggleActions: 'play none none reverse'
+        }
+      }
+    );
+    
+    // CTA section animation
+    gsap.fromTo(ctaRef.current, 
+      { 
+        opacity: 0, 
+        y: 80,
+        scale: 0.95 
+      },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 1.3,
+        scrollTrigger: {
+          trigger: '.cta',
+          start: 'top 85%',
+          toggleActions: 'play none none reverse'
+        }
+      }
+    );
+    
+    // Interactive map animation
+    gsap.fromTo('.interactive-map', 
+      { 
+        opacity: 0, 
+        y: 100,
+        rotationX: 15 
+      },
+      {
+        opacity: 1,
+        y: 0,
+        rotationX: 0,
+        duration: 1.4,
+        scrollTrigger: {
+          trigger: '.interactive-map',
+          start: 'top 90%',
+          toggleActions: 'play none none reverse'
+        }
+      }
+    );
+    
+    // Clean up ScrollTrigger on component unmount
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
 
   // Smooth scroll function
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      gsap.to(window, {
+        duration: 1.5,
+        scrollTo: element,
+        ease: "power2.inOut"
+      });
     }
   };
 
@@ -21,18 +279,17 @@ const LandingPage = () => {
     counters.forEach(counter => {
       const target = parseInt(counter.textContent.replace(/[^\d]/g, ''));
       const suffix = counter.textContent.replace(/[\d\.\,]/g, '');
-      let current = 0;
-      const increment = target / 100;
       
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-          counter.textContent = target + suffix;
-          clearInterval(timer);
-        } else {
-          counter.textContent = Math.floor(current) + suffix;
-        }
-      }, 20);
+      gsap.to(counter, {
+        innerText: target,
+        duration: 3,
+        snap: { innerText: 1 },
+        stagger: 0.5,
+        onUpdate: function() {
+          counter.textContent = Math.floor(this.targets()[0].innerText) + suffix;
+        },
+        ease: "elastic.out(1, 0.3)"
+      });
     });
     
     setCountersAnimated(true);
@@ -58,56 +315,60 @@ const LandingPage = () => {
     return () => observer.disconnect();
   }, [countersAnimated]);
 
-  // Navbar scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      const navbar = document.querySelector('.navbar');
-      if (navbar) {
-        if (window.scrollY > 100) {
-          navbar.style.background = 'rgba(26, 26, 26, 0.98)';
-        } else {
-          navbar.style.background = 'rgba(26, 26, 26, 0.95)';
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Floating particles effect
+  // Enhanced floating particles effect with hydrogen theme
   useEffect(() => {
     const createFloatingParticle = () => {
       const particle = document.createElement('div');
+      const size = Math.random() * 8 + 4;
+      particle.classList.add('floating-particle');
       particle.style.position = 'fixed';
-      particle.style.width = Math.random() * 4 + 2 + 'px';
-      particle.style.height = particle.style.width;
-      particle.style.background = 'rgba(0, 255, 136, 0.6)';
+      particle.style.width = size + 'px';
+      particle.style.height = size + 'px';
+      particle.style.background = 'radial-gradient(circle, var(--accent-mint) 0%, var(--accent-aqua) 70%, transparent 100%)';
       particle.style.borderRadius = '50%';
       particle.style.left = Math.random() * window.innerWidth + 'px';
-      particle.style.top = window.innerHeight + 'px';
+      particle.style.top = window.innerHeight + 50 + 'px';
       particle.style.pointerEvents = 'none';
-      particle.style.zIndex = '-1';
+      particle.style.zIndex = '1';
+      particle.style.boxShadow = '0 0 15px 3px rgba(144, 238, 144, 0.7)';
+      particle.style.opacity = '0';
       
-      document.body.appendChild(particle);
+      document.getElementById('particle-container').appendChild(particle);
       
-      const duration = Math.random() * 3000 + 2000;
-      particle.animate([
-        { transform: 'translateY(0px)', opacity: 0 },
-        { transform: 'translateY(-20px)', opacity: 1, offset: 0.1 },
-        { transform: `translateY(-${window.innerHeight + 100}px)`, opacity: 0 }
-      ], {
-        duration: duration,
-        easing: 'linear'
-      }).onfinish = () => particle.remove();
+      gsap.to(particle, {
+        y: -window.innerHeight - 100,
+        x: `+=${(Math.random() - 0.5) * 200}`,
+        rotation: Math.random() * 360,
+        opacity: 0.8,
+        duration: Math.random() * 10 + 10,
+        ease: "none",
+        onComplete: () => {
+          if (particle.parentNode) particle.remove();
+        }
+      });
     };
 
-    const interval = setInterval(createFloatingParticle, 800);
+    const interval = setInterval(createFloatingParticle, 300);
     return () => clearInterval(interval);
   }, []);
 
   const toggleMapView = () => {
     setMapExpanded(!mapExpanded);
+    if (!mapExpanded) {
+      // Animate map expansion
+      gsap.to('.interactive-map', {
+        height: 500,
+        duration: 1,
+        ease: "power2.inOut"
+      });
+    } else {
+      // Animate map contraction
+      gsap.to('.interactive-map', {
+        height: 300,
+        duration: 1,
+        ease: "power2.inOut"
+      });
+    }
   };
 
   const handleButtonClick = (e) => {
@@ -125,6 +386,18 @@ const LandingPage = () => {
     
     button.appendChild(ripple);
     
+    // GSAP animation for button click
+    gsap.to(button, {
+      scale: 0.9,
+      duration: 0.1,
+      yoyo: true,
+      repeat: 1,
+      ease: "power2.inOut",
+      onComplete: () => {
+        navigate('/auth');
+      }
+    });
+    
     setTimeout(() => {
       if (ripple.parentNode) ripple.remove();
     }, 600);
@@ -133,15 +406,20 @@ const LandingPage = () => {
   return (
     <>
       <style>{`
-        :root {
-          --primary-dark: #0a0a0a;
-          --secondary-dark: #1a1a1a;
-          --accent-green: #00ff88;
-          --muted-green: #2d5a3d;
-          --text-light: #e0e0e0;
-          --text-muted: #a0a0a0;
-          --gradient-green: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
-          --glow-green: 0 0 20px rgba(0, 255, 136, 0.3);
+          :root {
+          --primary-dark: #081C15;
+          --secondary-dark: #1B4332;
+          --accent-teal: #2D9CDB;
+          --accent-green: #27AE60;
+          --accent-mint: #90EE90;
+          --accent-aqua: #20B2AA;
+          --text-light: #F8F9FA;
+          --text-muted: #ADB5BD;
+          --gradient-primary: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-teal) 100%);
+          --gradient-secondary: linear-gradient(135deg, var(--accent-mint) 0%, var(--accent-aqua) 100%);
+          --glow-primary: 0 0 20px rgba(39, 174, 96, 0.6);
+          --glow-secondary: 0 0 15px rgba(45, 156, 219, 0.5);
+          --gradient-overlay: linear-gradient(135deg, rgba(8, 28, 21, 0.9) 0%, rgba(27, 67, 50, 0.7) 100%);
         }
 
         * {
@@ -158,6 +436,22 @@ const LandingPage = () => {
           overflow-x: hidden;
         }
 
+        #particle-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .floating-particle {
+          position: absolute;
+          border-radius: 50%;
+          z-index: 1;
+        }
+
         .bg-animation {
           position: fixed;
           top: 0;
@@ -167,74 +461,30 @@ const LandingPage = () => {
           z-index: -1;
           opacity: 0.1;
           background: 
-            radial-gradient(circle at 20% 50%, var(--accent-green) 0%, transparent 50%),
+            radial-gradient(circle at 20% 50%, var(--accent-aqua) 0%, transparent 50%),
             radial-gradient(circle at 80% 20%, var(--accent-green) 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, var(--accent-green) 0%, transparent 50%);
-          animation: float 20s ease-in-out infinite;
+            radial-gradient(circle at 40% 80%, var(--accent-teal) 0%, transparent 50%);
+          animation: float 30s ease-in-out infinite;
         }
 
         @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-
-        .navbar {
-          background: rgba(26, 26, 26, 0.95);
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid rgba(0, 255, 136, 0.2);
-          transition: all 0.3s ease;
-          position: fixed;
-          top: 0;
-          width: 100%;
-          z-index: 1000;
-          padding: 1rem 0;
-        }
-
-        .navbar-brand {
-          font-weight: 700;
-          font-size: 1.5rem;
-          color: var(--accent-green) !important;
-          text-shadow: var(--glow-green);
-          text-decoration: none;
-        }
-
-        .nav-link {
-          color: var(--text-light) !important;
-          font-weight: 500;
-          transition: color 0.3s ease;
-          position: relative;
-          text-decoration: none;
-          margin: 0 1rem;
-        }
-
-        .nav-link:hover {
-          color: var(--accent-green) !important;
-        }
-
-        .nav-link::after {
-          content: '';
-          position: absolute;
-          width: 0;
-          height: 2px;
-          bottom: -5px;
-          left: 50%;
-          background: var(--gradient-green);
-          transition: all 0.3s ease;
-          transform: translateX(-50%);
-        }
-
-        .nav-link:hover::after {
-          width: 100%;
+          0%, 100% { 
+            transform: translateY(0px) rotate(0deg) scale(1); 
+          }
+          33% { 
+            transform: translateY(-30px) rotate(120deg) scale(1.1);
+          }
+          66% { 
+            transform: translateY(20px) rotate(240deg) scale(0.9);
+          }
         }
 
         .hero {
-          min-height: 100vh;
-          background: linear-gradient(135deg, rgba(10, 10, 10, 0.9) 0%, rgba(26, 26, 26, 0.9) 100%);
           display: flex;
           align-items: center;
           position: relative;
           overflow: hidden;
-          padding-top: 80px;
+          padding: 70px 0 50px;
         }
 
         .hero::before {
@@ -244,72 +494,111 @@ const LandingPage = () => {
           left: 0;
           right: 0;
           bottom: 0;
-          background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%2300ff88" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+          background: 
+            linear-gradient(
+              90deg, 
+              var(--primary-dark) 0%, 
+              transparent 40%
+            ),
+            url('/images/hero_Image.webp') no-repeat right center;
+          background-size: cover;
+          z-index: -2;
+          transform: scale(1.1);
+          transition: transform 10s ease;
+        }
+
+        .hero:hover::before {
+          transform: scale(1.05);
+        }
+
+        .hero::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: var(--gradient-overlay);
           z-index: -1;
         }
 
+        .hero-content {
+          position: relative;
+          z-index: 2;
+          max-width: 600px;
+          backdrop-filter: blur(5px);
+          padding: 2rem;
+          border-radius: 20px;
+          background: rgba(8, 28, 21, 0.3);
+          border: 1px solid rgba(39, 174, 96, 0.2);
+        }
+
         .hero-content h1 {
-          font-size: 4rem;
+          font-size: 3.5rem;
           font-weight: 800;
-          background: var(--gradient-green);
+          background: var(--gradient-primary);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
           margin-bottom: 1.5rem;
-          animation: fadeInUp 1s ease;
+          line-height: 1.2;
+          text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .hero-content p {
-          font-size: 1.3rem;
+          font-size: 1.2rem;
           color: var(--text-muted);
           margin-bottom: 2rem;
-          animation: fadeInUp 1s ease 0.3s both;
+          line-height: 1.7;
         }
 
         .btn-primary-custom {
-          background: var(--gradient-green);
+          background: var(--gradient-primary);
           border: none;
-          padding: 15px 40px;
+          padding: 16px 45px;
           font-weight: 600;
           font-size: 1.1rem;
           border-radius: 50px;
           text-transform: uppercase;
-          letter-spacing: 1px;
-          transition: all 0.3s ease;
-          box-shadow: var(--glow-green);
-          animation: fadeInUp 1s ease 0.6s both;
+          letter-spacing: 1.5px;
+          transition: all 0.4s ease;
+          box-shadow: var(--glow-primary);
           position: relative;
           overflow: hidden;
-          color: var(--primary-dark);
+          color: var(--text-light);
+          transform: translateY(0);
         }
 
         .btn-primary-custom:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
-          color: var(--primary-dark);
+          transform: translateY(-5px);
+          box-shadow: 0 15px 35px rgba(39, 174, 96, 0.6);
+          color: var(--text-light);
         }
 
         .btn-outline-success-custom {
-          border: 2px solid var(--accent-green);
-          color: var(--accent-green);
+          border: 2px solid var(--accent-teal);
+          color: var(--accent-teal);
           background: transparent;
-          padding: 12px 30px;
+          padding: 14px 35px;
           border-radius: 50px;
           font-weight: 600;
-          transition: all 0.3s ease;
+          letter-spacing: 1.5px;
+          transition: all 0.4s ease;
           position: relative;
           overflow: hidden;
         }
 
         .btn-outline-success-custom:hover {
-          background: var(--accent-green);
+          background: var(--accent-teal);
           color: var(--primary-dark);
-          box-shadow: var(--glow-green);
+          box-shadow: var(--glow-secondary);
+          transform: translateY(-3px);
         }
 
         .hero-visual {
           position: relative;
-          animation: fadeInRight 1s ease 0.9s both;
+          z-index: 2;
+          perspective: 1000px;
         }
 
         .map-preview {
@@ -317,10 +606,84 @@ const LandingPage = () => {
           height: 400px;
           background: var(--secondary-dark);
           border-radius: 20px;
-          border: 2px solid rgba(0, 255, 136, 0.3);
+          border: 2px solid rgba(39, 174, 96, 0.3);
           position: relative;
           overflow: hidden;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+          transform-style: preserve-3d;
+        }
+
+        .hydrogen-3d-model {
+          width: 200px;
+          height: 200px;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: conic-gradient(
+            from 0deg at 50% 50%,
+            var(--accent-teal),
+            var(--accent-green),
+            var(--accent-mint),
+            var(--accent-aqua),
+            var(--accent-teal)
+          );
+          border-radius: 50%;
+          filter: blur(15px) opacity(0.7);
+          transform-style: preserve-3d;
+          animation: hydrogenGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes hydrogenGlow {
+          0%, 100% { 
+            filter: blur(15px) opacity(0.7);
+            transform: translate(-50%, -50%) scale(1);
+          }
+          50% { 
+            filter: blur(25px) opacity(0.9);
+            transform: translate(-50%, -50%) scale(1.1);
+          }
+        }
+
+        .electron {
+          position: absolute;
+          width: 20px;
+          height: 20px;
+          background: radial-gradient(circle, var(--accent-mint) 0%, transparent 70%);
+          border-radius: 50%;
+          top: 50%;
+          left: 50%;
+          transform-origin: 100px;
+        }
+
+        .electron:nth-child(1) { 
+          animation: orbitElectron1 6s linear infinite;
+          transform: rotate(0deg) translateX(100px) rotate(0deg);
+        }
+        
+        .electron:nth-child(2) { 
+          animation: orbitElectron2 8s linear infinite;
+          transform: rotate(120deg) translateX(100px) rotate(-120deg);
+        }
+        
+        .electron:nth-child(3) { 
+          animation: orbitElectron3 10s linear infinite;
+          transform: rotate(240deg) translateX(100px) rotate(-240deg);
+        }
+
+        @keyframes orbitElectron1 {
+          0% { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+          100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+        }
+        
+        @keyframes orbitElectron2 {
+          0% { transform: rotate(120deg) translateX(100px) rotate(-120deg); }
+          100% { transform: rotate(480deg) translateX(100px) rotate(-480deg); }
+        }
+        
+        @keyframes orbitElectron3 {
+          0% { transform: rotate(240deg) translateX(100px) rotate(-240deg); }
+          100% { transform: rotate(600deg) translateX(100px) rotate(-600deg); }
         }
 
         .map-overlay {
@@ -329,15 +692,17 @@ const LandingPage = () => {
           left: 50%;
           transform: translate(-50%, -50%);
           text-align: center;
+          z-index: 10;
         }
 
         .pulse-dot {
-          width: 20px;
-          height: 20px;
-          background: var(--accent-green);
+          width: 15px;
+          height: 15px;
+          background: var(--accent-teal);
           border-radius: 50%;
           position: absolute;
           animation: pulse 2s infinite;
+          box-shadow: 0 0 0 0 rgba(45, 156, 219, 0.7);
         }
 
         .pulse-dot:nth-child(1) { top: 30%; left: 20%; animation-delay: 0s; }
@@ -345,121 +710,211 @@ const LandingPage = () => {
         .pulse-dot:nth-child(3) { top: 80%; left: 40%; animation-delay: 1.4s; }
 
         @keyframes pulse {
-          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
-          70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
-          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
-        }
-
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeInRight {
-          from { opacity: 0; transform: translateX(30px); }
-          to { opacity: 1; transform: translateX(0); }
+          0% { 
+            transform: scale(1); 
+            box-shadow: 0 0 0 0 rgba(45, 156, 219, 0.7); 
+          }
+          70% { 
+            transform: scale(1.3); 
+            box-shadow: 0 0 0 15px rgba(45, 156, 219, 0); 
+          }
+          100% { 
+            transform: scale(1); 
+            box-shadow: 0 0 0 0 rgba(45, 156, 219, 0); 
+          }
         }
 
         .features {
-          padding: 100px 0;
+          padding: 120px 0;
           background: var(--secondary-dark);
           position: relative;
+          overflow: hidden;
+        }
+
+        .features::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: 
+            radial-gradient(circle at 20% 30%, rgba(39, 174, 96, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(45, 156, 219, 0.1) 0%, transparent 50%);
+          z-index: 0;
         }
 
         .section-title {
           text-align: center;
           margin-bottom: 80px;
+          position: relative;
         }
 
         .section-title h2 {
-          font-size: 3rem;
-          font-weight: 700;
-          color: var(--accent-green);
-          margin-bottom: 1rem;
+          font-size: 3.2rem;
+          font-weight: 800;
+          background: var(--gradient-primary);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-bottom: 1.5rem;
+          position: relative;
+          display: inline-block;
+        }
+
+        .section-title h2::after {
+          content: '';
+          position: absolute;
+          bottom: -10px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 80px;
+          height: 4px;
+          background: var(--gradient-primary);
+          border-radius: 2px;
+        }
+
+        .section-title p {
+          font-size: 1.3rem;
+          color: var(--text-muted);
+          max-width: 600px;
+          margin: 0 auto;
         }
 
         .feature-card {
-          background: rgba(26, 26, 26, 0.8);
-          border: 1px solid rgba(0, 255, 136, 0.2);
-          border-radius: 15px;
+          background: rgba(27, 67, 50, 0.8);
+          border: 1px solid rgba(39, 174, 96, 0.3);
+          border-radius: 20px;
           padding: 40px 30px;
           text-align: center;
-          transition: all 0.3s ease;
+          transition: all 0.4s ease;
           height: 100%;
           backdrop-filter: blur(10px);
+          position: relative;
+          overflow: hidden;
+          transform-style: preserve-3d;
+          perspective: 1000px;
+        }
+
+        .feature-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, rgba(39, 174, 96, 0.15) 0%, rgba(45, 156, 219, 0.15) 100%);
+          opacity: 0;
+          transition: opacity 0.4s ease;
+          z-index: -1;
         }
 
         .feature-card:hover {
-          transform: translateY(-10px);
+          transform: translateY(-15px) rotateX(5deg);
           border-color: var(--accent-green);
-          box-shadow: 0 20px 40px rgba(0, 255, 136, 0.1);
+          box-shadow: 0 25px 50px rgba(39, 174, 96, 0.2);
+        }
+
+        .feature-card:hover::before {
+          opacity: 1;
         }
 
         .feature-icon {
-          font-size: 3rem;
-          color: var(--accent-green);
+          font-size: 3.5rem;
+          background: var(--gradient-primary);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           margin-bottom: 1.5rem;
           display: block;
+          transition: all 0.4s ease;
+          filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2));
+        }
+
+        .feature-card:hover .feature-icon {
+          transform: scale(1.2) rotate(10deg);
         }
 
         .feature-title {
-          font-size: 1.5rem;
-          font-weight: 600;
+          font-size: 1.6rem;
+          font-weight: 700;
           margin-bottom: 1rem;
           color: var(--text-light);
+          position: relative;
         }
 
         .feature-desc {
           color: var(--text-muted);
-          line-height: 1.7;
+          line-height: 1.8;
+          font-size: 1.05rem;
         }
 
         .stats {
-          padding: 80px 0;
+          padding: 100px 0;
           background: var(--primary-dark);
+          position: relative;
+        }
+
+        .stats::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: var(--gradient-primary);
         }
 
         .stat-item {
           text-align: center;
           margin-bottom: 2rem;
+          position: relative;
+          padding: 20px;
         }
 
         .stat-number {
-          font-size: 3.5rem;
-          font-weight: 800;
-          background: var(--gradient-green);
+          font-size: 4rem;
+          font-weight: 900;
+          background: var(--gradient-primary);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
           display: block;
+          line-height: 1;
+          margin-bottom: 0.5rem;
+          text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         .stat-label {
           color: var(--text-muted);
           font-size: 1.1rem;
           text-transform: uppercase;
-          letter-spacing: 1px;
+          letter-spacing: 1.5px;
+          font-weight: 600;
         }
 
         .use-cases {
-          padding: 100px 0;
+          padding: 120px 0;
           background: var(--secondary-dark);
+          position: relative;
         }
 
         .use-case-item {
-          background: rgba(10, 10, 10, 0.6);
-          border-left: 4px solid var(--accent-green);
-          padding: 30px;
+          background: rgba(8, 28, 21, 0.7);
+          border-left: 5px solid var(--accent-teal);
+          padding: 35px 30px;
           margin-bottom: 30px;
-          border-radius: 0 15px 15px 0;
-          transition: all 0.3s ease;
+          border-radius: 0 20px 20px 0;
+          transition: all 0.4s ease;
           position: relative;
           overflow: hidden;
+          backdrop-filter: blur(5px);
         }
 
         .use-case-item:hover {
-          background: rgba(10, 10, 10, 0.8);
-          transform: translateX(10px);
+          background: rgba(8, 28, 21, 0.9);
+          transform: translateX(15px);
+          box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
         }
 
         .use-case-item::before {
@@ -469,8 +924,8 @@ const LandingPage = () => {
           left: -100%;
           width: 100%;
           height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
-          transition: left 0.5s ease;
+          background: linear-gradient(90deg, transparent, rgba(45, 156, 219, 0.3), transparent);
+          transition: left 0.7s ease;
         }
 
         .use-case-item:hover::before {
@@ -478,100 +933,91 @@ const LandingPage = () => {
         }
 
         .use-case-icon {
-          color: var(--accent-green);
-          font-size: 2rem;
-          margin-bottom: 1rem;
+          background: var(--gradient-primary);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          font-size: 2.5rem;
+          margin-bottom: 1.2rem;
+          transition: all 0.4s ease;
+          display: inline-block;
+        }
+
+        .use-case-item:hover .use-case-icon {
+          transform: scale(1.3);
         }
 
         .use-case-title {
-          font-size: 1.3rem;
-          font-weight: 600;
-          margin-bottom: 0.5rem;
+          font-size: 1.4rem;
+          font-weight: 700;
+          margin-bottom: 0.8rem;
           color: var(--text-light);
         }
 
         .use-case-desc {
           color: var(--text-muted);
+          line-height: 1.7;
         }
+
+        
 
         .cta {
-          padding: 100px 0;
-          background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 204, 106, 0.1) 100%);
+          padding: 120px 0;
+          background: linear-gradient(135deg, rgba(39, 174, 96, 0.2) 0%, rgba(45, 156, 219, 0.2) 100%);
           text-align: center;
-        }
-
-        .cta h2 {
-          font-size: 3rem;
-          font-weight: 700;
-          margin-bottom: 1.5rem;
-          color: var(--text-light);
-        }
-
-        .cta p {
-          font-size: 1.2rem;
-          color: var(--text-muted);
-          margin-bottom: 3rem;
-        }
-
-        .footer {
-          background: var(--primary-dark);
-          border-top: 1px solid rgba(0, 255, 136, 0.2);
-          padding: 40px 0;
-        }
-
-        .interactive-map {
-          background: var(--secondary-dark);
-          border-radius: 15px;
-          padding: 20px;
-          margin: 50px 0;
-          border: 2px solid rgba(0, 255, 136, 0.3);
           position: relative;
-          height: ${mapExpanded ? '500px' : '300px'};
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
+          overflow: hidden;
         }
 
-        .interactive-map:hover {
-          border-color: var(--accent-green);
-          box-shadow: var(--glow-green);
-        }
-
-        .floating-icons {
+        .cta::before {
+          content: '';
           position: absolute;
           top: 0;
           left: 0;
-          right: 0;
-          bottom: 0;
-          pointer-events: none;
+          width: 100%;
+          height: 100%;
+          background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="%2320B2AA" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+          z-index: -1;
         }
 
-        .floating-icon {
+        .cta h2 {
+          font-size: 3.5rem;
+          font-weight: 800;
+          margin-bottom: 1.5rem;
+          background: var(--gradient-primary);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .cta p {
+          font-size: 1.3rem;
+          color: var(--text-muted);
+          margin-bottom: 3rem;
+          max-width: 700px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .wave-divider {
           position: absolute;
-          color: var(--accent-green);
-          animation: floatIcon 4s ease-in-out infinite;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          overflow: hidden;
+          line-height: 0;
+          transform: rotate(180deg);
         }
 
-        .floating-icon:nth-child(1) { top: 20%; left: 15%; animation-delay: 0s; }
-        .floating-icon:nth-child(2) { top: 70%; left: 80%; animation-delay: 1s; }
-        .floating-icon:nth-child(3) { top: 50%; left: 60%; animation-delay: 2s; }
-        .floating-icon:nth-child(4) { top: 30%; left: 70%; animation-delay: 3s; }
-
-        @keyframes floatIcon {
-          0%, 100% { transform: translateY(0px) scale(1); opacity: 0.7; }
-          50% { transform: translateY(-10px) scale(1.1); opacity: 1; }
+        .wave-divider svg {
+          position: relative;
+          display: block;
+          width: calc(100% + 1.3px);
+          height: 60px;
         }
 
-        .glow-text {
-          text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-        }
-
-        .card-dark {
-          background: rgba(26, 26, 26, 0.9);
-          border: 1px solid rgba(0, 255, 136, 0.2);
-          backdrop-filter: blur(10px);
+        .wave-divider .shape-fill {
+          fill: var(--primary-dark);
         }
 
         .container {
@@ -640,7 +1086,7 @@ const LandingPage = () => {
 
         .badge {
           display: inline-block;
-          padding: 0.25em 0.6em;
+          padding: 0.35em 0.65em;
           font-size: 0.75em;
           font-weight: 700;
           line-height: 1;
@@ -651,8 +1097,8 @@ const LandingPage = () => {
         }
 
         .bg-success {
-          background-color: var(--accent-green) !important;
-          color: var(--primary-dark) !important;
+          background: var(--gradient-primary) !important;
+          color: var(--text-light) !important;
         }
 
         .bg-dark {
@@ -664,7 +1110,7 @@ const LandingPage = () => {
         }
 
         .card {
-          border-radius: 0.375rem;
+          border-radius: 0.5rem;
           border: 1px solid rgba(255, 255, 255, 0.125);
         }
 
@@ -674,7 +1120,7 @@ const LandingPage = () => {
           overflow: hidden;
           font-size: 0.75rem;
           background-color: var(--secondary-dark);
-          border-radius: 0.25rem;
+          border-radius: 0.5rem;
         }
 
         .progress-bar {
@@ -686,12 +1132,14 @@ const LandingPage = () => {
           text-align: center;
           white-space: nowrap;
           transition: width 0.6s ease;
+          background: var(--gradient-primary);
+          border-radius: 0.5rem;
         }
 
         .ripple {
           position: absolute;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.4);
           transform: scale(0);
           animation: ripple-animation 0.6s linear;
           pointer-events: none;
@@ -707,8 +1155,8 @@ const LandingPage = () => {
         @media (max-width: 768px) {
           .hero-content h1 { font-size: 2.5rem; }
           .hero-content p { font-size: 1.1rem; }
-          .section-title h2 { font-size: 2.2rem; }
-          .stat-number { font-size: 2.5rem; }
+          .section-title h2 { font-size: 2.5rem; }
+          .stat-number { font-size: 3rem; }
           .col-lg-6, .col-md-4, .col-md-6, .col-md-3 { 
             flex: 0 0 100%; 
           }
@@ -718,11 +1166,22 @@ const LandingPage = () => {
           .row {
             flex-direction: column;
           }
+          
+          .hero::before {
+            background: 
+              linear-gradient(
+                to bottom, 
+                var(--primary-dark) 0%, 
+                transparent 30%
+              ),
+              url('/images/hero_Image.webp') no-repeat center center;
+            background-size: cover;
+          }
         }
 
         @media (max-width: 576px) {
           .hero-content h1 {
-            font-size: 2rem;
+            font-size: 2.2rem;
           }
           
           .btn-primary-custom, .btn-outline-success-custom {
@@ -735,43 +1194,99 @@ const LandingPage = () => {
           }
           
           .stat-number {
+            font-size: 2.5rem;
+          }
+          
+          .section-title h2 {
             font-size: 2rem;
           }
+        }
+          
+        .interactive-map-section {
+          padding: 100px 0;
+          background: var(--primary-dark);
+          position: relative;
+        }
+
+        .interactive-map {
+          background: var(--secondary-dark);
+          border-radius: 20px;
+          padding: 0;
+          margin: 50px 0;
+          border: 2px solid rgba(39, 174, 96, 0.3);
+          position: relative;
+          height: ${mapExpanded ? '500px' : '300px'};
+          overflow: hidden;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .interactive-map:hover {
+          border-color: var(--accent-teal);
+          box-shadow: var(--glow-secondary);
+        }
+
+        .map-container {
+          width: 100%;
+          height: 100%;
+          border-radius: 18px;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .hydrogen-marker {
+          background: radial-gradient(circle, var(--accent-mint) 0%, var(--accent-teal) 100%);
+          border-radius: 50%;
+          box-shadow: 0 0 15px var(--accent-green);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 14px;
+        }
+
+        .map-expand-btn {
+          position: absolute;
+          bottom: 20px;
+          right: 20px;
+          background: var(--gradient-primary);
+          border: none;
+          color: white;
+          padding: 10px 20px;
+          border-radius: 50px;
+          font-weight: 600;
+          cursor: pointer;
+          z-index: 1000;
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+          transition: all 0.3s ease;
+        }
+
+        .map-expand-btn:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .map-overlay-content {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          text-align: center;
+          z-index: 10;
+          color: white;
         }
       `}</style>
 
       <div className="bg-animation"></div>
-
-      {/* Navigation */}
-      <nav className="navbar">
-        <div className="container">
-          <a className="navbar-brand" href="#home">
-            <i className="fas fa-atom me-2"></i>HydroMap Pro
-          </a>
-          <div className="d-flex">
-            <a className="nav-link" href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features'); }}>
-              Features
-            </a>
-            <a className="nav-link" href="#users" onClick={(e) => { e.preventDefault(); scrollToSection('users'); }}>
-              Users
-            </a>
-            <a className="nav-link" href="#impact" onClick={(e) => { e.preventDefault(); scrollToSection('impact'); }}>
-              Impact
-            </a>
-            <a className="nav-link" href="#demo" onClick={(e) => { e.preventDefault(); scrollToSection('demo'); }}>
-              Demo
-            </a>
-          </div>
-        </div>
-      </nav>
+      <div id="particle-container"></div>
 
       {/* Hero Section */}
       <section id="home" className="hero">
         <div className="container">
           <div className="row align-items-center">
             <div className="col-lg-6">
-              <div className="hero-content">
-                <h1 className="glow-text">Green Hydrogen Infrastructure Mapping & Optimization</h1>
+              <div className="hero-content" ref={heroContentRef}>
+                <h1>Green Hydrogen Infrastructure Mapping & Optimization</h1>
                 <p>Visualize, analyze, and optimize hydrogen ecosystem development with our cutting-edge map-based platform. Drive strategic investments with data-driven insights for a sustainable energy future.</p>
                 <div className="d-flex gap-3 flex-wrap">
                   <button 
@@ -790,13 +1305,12 @@ const LandingPage = () => {
               </div>
             </div>
             <div className="col-lg-6">
-              <div className="hero-visual">
+              <div className="hero-visual" ref={heroVisualRef}>
                 <div className="map-preview">
-                  <div className="floating-icons">
-                    <i className="fas fa-industry floating-icon"></i>
-                    <i className="fas fa-wind floating-icon"></i>
-                    <i className="fas fa-warehouse floating-icon"></i>
-                    <i className="fas fa-truck floating-icon"></i>
+                  <div className="hydrogen-3d-model" ref={threeDModelRef}>
+                    <div className="electron"></div>
+                    <div className="electron"></div>
+                    <div className="electron"></div>
                   </div>
                   <div className="pulse-dot"></div>
                   <div className="pulse-dot"></div>
@@ -815,24 +1329,36 @@ const LandingPage = () => {
 
       {/* Features Section */}
       <section id="features" className="features">
+        <div className="wave-divider">
+          <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="shape-fill"></path>
+          </svg>
+        </div>
         <div className="container">
-          <div className="section-title">
+          <div className="section-title" ref={sectionTitleRef}>
             <h2>Powerful Features</h2>
-            <p className="text-muted" style={{fontSize: '1.25rem'}}>Advanced tools for hydrogen infrastructure planning and optimization</p>
+            <p>Advanced tools for hydrogen infrastructure planning and optimization</p>
           </div>
           <div className="row">
             <div className="col-md-4">
-              <div className="feature-card">
+              <div className="feature-card" ref={el => featureCardsRef.current[0] = el}>
                 <i className="fas fa-network-wired feature-icon"></i>
                 <h3 className="feature-title">Network Planning</h3>
                 <p className="feature-desc">Plan and optimize hydrogen distribution networks to minimize costs while maximizing coverage and efficiency.</p>
               </div>
             </div>
             <div className="col-md-4">
-              <div className="feature-card">
+              <div className="feature-card" ref={el => featureCardsRef.current[1] = el}>
                 <i className="fas fa-shield-alt feature-icon"></i>
                 <h3 className="feature-title">Regulatory Intelligence</h3>
                 <p className="feature-desc">Navigate complex regulatory landscapes with integrated policy data and compliance tracking across different jurisdictions.</p>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="feature-card" ref={el => featureCardsRef.current[2] = el}>
+                <i className="fas fa-chart-line feature-icon"></i>
+                <h3 className="feature-title">Economic Analysis</h3>
+                <p className="feature-desc">Evaluate project viability with comprehensive cost-benefit analysis and ROI projections based on real-time market data.</p>
               </div>
             </div>
           </div>
@@ -844,25 +1370,25 @@ const LandingPage = () => {
         <div className="container">
           <div className="row">
             <div className="col-md-3">
-              <div className="stat-item">
+              <div className="stat-item" ref={el => statsRefs.current[0] = el}>
                 <span className="stat-number">500+</span>
                 <div className="stat-label">Mapped Assets</div>
               </div>
             </div>
             <div className="col-md-3">
-              <div className="stat-item">
+              <div className="stat-item" ref={el => statsRefs.current[1] = el}>
                 <span className="stat-number">$2.5B</span>
                 <div className="stat-label">Investment Optimized</div>
               </div>
             </div>
             <div className="col-md-3">
-              <div className="stat-item">
+            <div className="stat-item" ref={el => statsRefs.current[2] = el}>
                 <span className="stat-number">15</span>
                 <div className="stat-label">Countries Covered</div>
               </div>
             </div>
             <div className="col-md-3">
-              <div className="stat-item">
+              <div className="stat-item" ref={el => statsRefs.current[3] = el}>
                 <span className="stat-number">95%</span>
                 <div className="stat-label">Cost Reduction</div>
               </div>
@@ -873,31 +1399,36 @@ const LandingPage = () => {
 
       {/* Use Cases Section */}
       <section id="users" className="use-cases">
+        <div className="wave-divider">
+          <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="shape-fill"></path>
+          </svg>
+        </div>
         <div className="container">
           <div className="section-title">
             <h2>Who Uses HydroMap Pro</h2>
-            <p className="text-muted" style={{fontSize: '1.25rem'}}>Empowering key stakeholders in the hydrogen economy</p>
+            <p>Empowering key stakeholders in the hydrogen economy</p>
           </div>
           <div className="row">
             <div className="col-lg-6">
-              <div className="use-case-item">
+              <div className="use-case-item" ref={el => useCasesRef.current[0] = el}>
                 <i className="fas fa-city use-case-icon"></i>
                 <h4 className="use-case-title">Urban & Regional Planners</h4>
                 <p className="use-case-desc">Plan sustainable hydrogen infrastructure integration into existing urban frameworks and regional development strategies.</p>
               </div>
-              <div className="use-case-item">
+              <div className="use-case-item" ref={el => useCasesRef.current[1] = el}>
                 <i className="fas fa-bolt use-case-icon"></i>
                 <h4 className="use-case-title">Energy Companies</h4>
                 <p className="use-case-desc">Identify optimal locations for hydrogen production, storage, and distribution to maximize operational efficiency and market reach.</p>
               </div>
             </div>
             <div className="col-lg-6">
-              <div className="use-case-item">
+              <div className="use-case-item" ref={el => useCasesRef.current[2] = el}>
                 <i className="fas fa-hammer use-case-icon"></i>
                 <h4 className="use-case-title">Project Developers</h4>
                 <p className="use-case-desc">Accelerate project development with comprehensive site analysis, risk assessment, and stakeholder mapping tools.</p>
               </div>
-              <div className="use-case-item">
+              <div className="use-case-item" ref={el => useCasesRef.current[3] = el}>
                 <i className="fas fa-balance-scale use-case-icon"></i>
                 <h4 className="use-case-title">Policy Analysts</h4>
                 <p className="use-case-desc">Support evidence-based policy development with detailed infrastructure analysis and economic impact modeling.</p>
@@ -907,91 +1438,27 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Interactive Demo Section */}
-      <section id="demo" className="features">
+      {/* Interactive Map Section */}
+      <section id="demo" className="interactive-map-section">
         <div className="container">
           <div className="section-title">
             <h2>Experience the Platform</h2>
-            <p className="text-muted" style={{fontSize: '1.25rem'}}>Interactive preview of our hydrogen infrastructure mapping capabilities</p>
+            <p>Interactive preview of our hydrogen infrastructure mapping capabilities</p>
           </div>
-          <div className="interactive-map" onClick={toggleMapView}>
-            <div className="floating-icons">
-              <i className="fas fa-solar-panel floating-icon" style={{top: '25%', left: '20%'}}></i>
-              <i className="fas fa-industry floating-icon" style={{top: '45%', left: '75%'}}></i>
-              <i className="fas fa-warehouse floating-icon" style={{top: '70%', left: '30%'}}></i>
-              <i className="fas fa-shipping-fast floating-icon" style={{top: '35%', left: '55%'}}></i>
-            </div>
-            <div className="map-placeholder">
-              {!mapExpanded ? (
-                <>
+          <div className="interactive-map">
+            <div className="map-container" ref={mapContainerRef}>
+              {!mapExpanded && (
+                <div className="map-overlay-content">
                   <i className="fas fa-play-circle fa-4x text-success mb-3"></i>
                   <h4>Interactive Map Demo</h4>
                   <p>Click to explore hydrogen infrastructure mapping</p>
-                </>
-              ) : (
-                <div className="row w-100">
-                  <div className="col-md-8">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <h5 className="text-light mb-0">Hydrogen Infrastructure Overview</h5>
-                      <span className="badge bg-success">Live Data</span>
-                    </div>
-                    <div className="row gap-3 mb-3" style={{flexWrap: 'nowrap'}}>
-                      <div className="col-3">
-                        <div className="card bg-dark border-success text-center" style={{padding: '0.5rem'}}>
-                          <i className="fas fa-industry text-success"></i>
-                          <small className="text-muted">Plants: 24</small>
-                        </div>
-                      </div>
-                      <div className="col-3">
-                        <div className="card bg-dark border-success text-center" style={{padding: '0.5rem'}}>
-                          <i className="fas fa-warehouse text-success"></i>
-                          <small className="text-muted">Storage: 18</small>
-                        </div>
-                      </div>
-                      <div className="col-3">
-                        <div className="card bg-dark border-success text-center" style={{padding: '0.5rem'}}>
-                          <i className="fas fa-route text-success"></i>
-                          <small className="text-muted">Pipelines: 12</small>
-                        </div>
-                      </div>
-                      <div className="col-3">
-                        <div className="card bg-dark border-success text-center" style={{padding: '0.5rem'}}>
-                          <i className="fas fa-truck text-success"></i>
-                          <small className="text-muted">Hubs: 8</small>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="progress mb-3" style={{height: '8px'}}>
-                      <div className="progress-bar bg-success" style={{width: '75%'}}></div>
-                    </div>
-                    <small className="text-muted">Network Optimization: 75% Complete</small>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="bg-dark" style={{borderRadius: '0.375rem', padding: '1rem', height: '100%'}}>
-                      <h6 className="text-success mb-3">Recommended Sites</h6>
-                      <div className="d-flex align-items-center mb-3">
-                        <i className="fas fa-map-marker-alt text-success me-2"></i>
-                        <small className="text-light">Northern Industrial Zone</small>
-                      </div>
-                      <div className="d-flex align-items-center mb-3">
-                        <i className="fas fa-map-marker-alt text-success me-2"></i>
-                        <small className="text-light">Port Authority District</small>
-                      </div>
-                      <div className="d-flex align-items-center mb-3">
-                        <i className="fas fa-map-marker-alt text-success me-2"></i>
-                        <small className="text-light">Renewable Energy Corridor</small>
-                      </div>
-                      <button 
-                        className="btn btn-success btn-sm mt-3 w-100"
-                        onClick={handleButtonClick}
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
+            <button className="map-expand-btn" onClick={toggleMapView}>
+              <i className={`fas fa-${mapExpanded ? 'compress' : 'expand'} me-2`}></i>
+              {mapExpanded ? 'Minimize Map' : 'Expand Map'}
+            </button>
           </div>
         </div>
       </section>
@@ -1031,52 +1498,28 @@ const LandingPage = () => {
       {/* CTA Section */}
       <section className="cta">
         <div className="container">
-          <h2 className="glow-text">Ready to Transform Hydrogen Infrastructure Planning?</h2>
-          <p>Join leading organizations already using HydroMap Pro to build the hydrogen economy of tomorrow.</p>
-          <div className="d-flex gap-3 justify-content-center flex-wrap">
-            <button 
-              className="btn btn-primary-custom"
-              style={{fontSize: '1.125rem', padding: '15px 40px'}}
-              onClick={handleButtonClick}
-            >
-              <i className="fas fa-rocket me-2"></i>Start Free Trial
-            </button>
-            <button 
-              className="btn btn-outline-success-custom"
-              style={{fontSize: '1.125rem', padding: '15px 40px'}}
-              onClick={handleButtonClick}
-            >
-              <i className="fas fa-calendar me-2"></i>Schedule Demo
-            </button>
+          <div ref={ctaRef}>
+            <h2 className="glow-text">Ready to Transform Hydrogen Infrastructure Planning?</h2>
+            <p>Join leading organizations already using HydroMap Pro to build the hydrogen economy of tomorrow.</p>
+            <div className="d-flex gap-3 justify-content-center flex-wrap">
+              <button 
+                className="btn btn-primary-custom"
+                style={{fontSize: '1.125rem', padding: '15px 40px'}}
+                onClick={handleButtonClick}
+              >
+                <i className="fas fa-rocket me-2"></i>Start Free Trial
+              </button>
+              <button 
+                className="btn btn-outline-success-custom"
+                style={{fontSize: '1.125rem', padding: '15px 40px'}}
+                onClick={handleButtonClick}
+              >
+                <i className="fas fa-calendar me-2"></i>Schedule Demo
+              </button>
+            </div>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="footer">
-        <div className="container">
-          <div className="row">
-            <div className="col-md-6">
-              <h5 className="text-success">HydroMap Pro</h5>
-              <p className="text-muted">Leading the future of green hydrogen infrastructure development through intelligent mapping and optimization.</p>
-            </div>
-            <div className="col-md-6 text-md-end">
-              <div className="d-flex justify-content-end gap-3">
-                <a href="#" className="text-muted">
-                  <i className="fab fa-linkedin fa-2x"></i>
-                </a>
-                <a href="#" className="text-muted">
-                  <i className="fab fa-twitter fa-2x"></i>
-                </a>
-                <a href="#" className="text-muted">
-                  <i className="fas fa-envelope fa-2x"></i>
-                </a>
-              </div>
-              <p className="text-muted mt-3">© 2025 HydroMap Pro. All rights reserved.</p>
-            </div>
-          </div>
-        </div>
-      </footer>
     </>
   );
 };
