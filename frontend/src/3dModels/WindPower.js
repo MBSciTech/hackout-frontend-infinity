@@ -714,28 +714,20 @@ const WindPower = ({ windTurbineCount = 1, electrolysisCount = 1, showControls =
       cameraRef.current = camera;
 
       // Renderer
-      // Renderer
-const renderer = new THREE.WebGLRenderer({ 
-    antialias: true,
-    alpha: true,
-    powerPreference: "high-performance"
-  });
-  // renderer.setSize(window.innerWidth, window.innerHeight);
-  
-  // ✅ Instead: render to the mount div size
-  const width = mountRef.current.clientWidth;
-  const height = mountRef.current.clientHeight;
-  renderer.setSize(width, height);
-  
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(0x000000, 0);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.2;
-  rendererRef.current = renderer;
-  
+      const renderer = new THREE.WebGLRenderer({ 
+        antialias: true,
+        alpha: true,
+        powerPreference: "high-performance"
+      });
+      renderer.setSize(400, 500);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setClearColor(0x000000, 0);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.2;
+      rendererRef.current = renderer;
       
       if (mountRef.current) {
         while (mountRef.current.firstChild) {
@@ -846,18 +838,10 @@ const renderer = new THREE.WebGLRenderer({
       if (cameraRef.current && rendererRef.current && mountRef.current) {
         const width = mountRef.current.clientWidth;
         const height = mountRef.current.clientHeight;
-
-        console.log(`WindPower: Resize detected - Parent Width: ${width}, Height: ${height}`);
-
-        // Only resize if width and height are valid
-        if (width > 0 && height > 0) {
-          cameraRef.current.aspect = width / height;
-          cameraRef.current.updateProjectionMatrix();
-          rendererRef.current.setSize(width, height);
-          console.log(`WindPower: Renderer resized to ${width}x${height}, Aspect: ${cameraRef.current.aspect}`);
-        } else {
-          console.warn(`WindPower: Invalid dimensions for resize - Width: ${width}, Height: ${height}`);
-        }
+        
+        cameraRef.current.aspect = width / height;
+        cameraRef.current.updateProjectionMatrix();
+        rendererRef.current.setSize(width, height);
       }
     };
 
