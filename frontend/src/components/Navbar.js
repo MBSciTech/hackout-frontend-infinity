@@ -1,17 +1,40 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(true);
-  const [activeItem, setActiveItem] = useState('dashboard');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isHovering, setIsHovering] = useState(false);
+  const location = useLocation();
+
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-tachometer-alt', path: '/dashboard' },
+    { id: 'map', label: 'Hydrogen Map', icon: 'fas fa-map-marked-alt', path: '/map' },
+    { id: 'analytics', label: 'Analytics', icon: 'fas fa-chart-line', path: '/analytics' },
+    { id: 'infrastructure', label: 'Infrastructure', icon: 'fas fa-industry', path: '/infrastructure' },
+    { id: 'settings', label: 'Settings', icon: 'fas fa-cog', path: '/settings' },
+  ];
+
+  // Set active item based on current path
+  const getActiveItem = () => {
+    const path = location.pathname;
+    const item = menuItems.find(item => item.path === path);
+    return item ? item.id : 'dashboard';
+  };
+
+  const [activeItem, setActiveItem] = useState(getActiveItem());
+
+  // Update active item when location changes
+  useEffect(() => {
+    setActiveItem(getActiveItem());
+  }, [location.pathname]);
 
   // Handle window resize for responsiveness
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      
+
       if (mobile) {
         setIsOpen(false);
       } else {
@@ -29,39 +52,29 @@ const Navbar = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleNavigation = (item) => {
-    setActiveItem(item);
+  const handleNavigation = (itemId) => {
+    setActiveItem(itemId);
     if (isMobile) {
       setIsOpen(false);
     }
   };
 
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-tachometer-alt', path: '/dashboard' },
-    { id: 'map', label: 'Hydrogen Map', icon: 'fas fa-map-marked-alt', path: '/map' },
-    { id: 'analytics', label: 'Analytics', icon: 'fas fa-chart-line', path: '/analytics' },
-    { id: 'infrastructure', label: 'Infrastructure', icon: 'fas fa-industry', path: '/infrastructure' },
-    { id: 'settings', label: 'Settings', icon: 'fas fa-cog', path: '/settings' },
-  ];
-
   return (
     <>
       <style>{`
-        /* Custom Variables */
+        /* Custom Variables - Dark Theme */
         :root {
           --sidebar-width-expanded: 280px;
           --sidebar-width-collapsed: 80px;
-          --primary-dark: #1a202c;
-          --secondary-dark: #2d3748;
-          --accent-emerald: #10b981;
-          --accent-teal: #14b8a6;
-          --accent-blue: #3b82f6;
-          --text-light: #f7fafc;
-          --text-muted: #a0aec0;
-          --border-color: rgba(16, 185, 129, 0.2);
-          --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.3);
-          --transition-fast: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          --transition-smooth: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          --primary-bg: #0A192F;
+          --secondary-bg: #112240;
+          --accent-green: #64ffda;
+          --text-light: #ccd6f6;
+          --text-muted: #8892b0;
+          --border-color: #233554;
+          --shadow-dark: 0 10px 30px -15px rgba(2, 12, 27, 0.7);
+          --transition-fast: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+          --transition-smooth: all 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
         }
 
         /* Main Sidebar Container */
@@ -71,9 +84,8 @@ const Navbar = () => {
           left: 0;
           height: 100vh;
           width: ${isOpen ? 'var(--sidebar-width-expanded)' : 'var(--sidebar-width-collapsed)'};
-          background: linear-gradient(180deg, var(--primary-dark) 0%, var(--secondary-dark) 50%, var(--primary-dark) 100%);
-          border-right: 2px solid var(--border-color);
-          box-shadow: 5px 0 25px rgba(0, 0, 0, 0.3);
+          background: var(--primary-bg);
+          box-shadow: var(--shadow-dark);
           transition: var(--transition-smooth);
           z-index: 1050;
           overflow: hidden;
@@ -86,8 +98,8 @@ const Navbar = () => {
           right: 0;
           width: 1px;
           height: 100%;
-          background: linear-gradient(180deg, transparent 0%, var(--accent-emerald) 50%, transparent 100%);
-          opacity: 0.6;
+          background: linear-gradient(180deg, transparent 0%, var(--accent-green) 50%, transparent 100%);
+          opacity: 0.3;
         }
 
         /* Mobile Styles */
@@ -106,12 +118,12 @@ const Navbar = () => {
           z-index: 1055;
           width: 50px;
           height: 50px;
-          background: linear-gradient(135deg, var(--accent-emerald) 0%, var(--accent-teal) 100%);
+          background: var(--accent-green);
           border: none;
           border-radius: 12px;
-          color: white;
+          color: var(--primary-bg);
           font-size: 1.2rem;
-          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+          box-shadow: var(--shadow-dark);
           transition: var(--transition-fast);
           display: ${isMobile && !isOpen ? 'flex' : 'none'};
           align-items: center;
@@ -119,8 +131,8 @@ const Navbar = () => {
         }
 
         .mobile-toggle-btn:hover {
-          transform: scale(1.1) rotate(5deg);
-          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+          transform: scale(1.1);
+          box-shadow: 0 6px 20px rgba(100, 255, 218, 0.3);
         }
 
         /* Mobile Backdrop */
@@ -130,7 +142,7 @@ const Navbar = () => {
           left: 0;
           width: 100vw;
           height: 100vh;
-          background: rgba(0, 0, 0, 0.6);
+          background: rgba(0, 0, 0, 0.4);
           backdrop-filter: blur(4px);
           z-index: 1040;
           opacity: ${isMobile && isOpen ? 1 : 0};
@@ -142,7 +154,7 @@ const Navbar = () => {
         .sidebar-header {
           padding: 1.5rem 1rem;
           border-bottom: 1px solid var(--border-color);
-          background: rgba(16, 185, 129, 0.05);
+          background: var(--secondary-bg);
           position: relative;
           overflow: hidden;
         }
@@ -153,8 +165,8 @@ const Navbar = () => {
           top: 0;
           left: 0;
           width: 100%;
-          height: 2px;
-          background: linear-gradient(90deg, var(--accent-emerald) 0%, var(--accent-teal) 100%);
+          height: 3px;
+          background: var(--accent-green);
         }
 
         .logo-container {
@@ -166,21 +178,21 @@ const Navbar = () => {
         .logo-icon {
           width: 45px;
           height: 45px;
-          background: linear-gradient(135deg, var(--accent-emerald) 0%, var(--accent-teal) 100%);
+          background: var(--accent-green);
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: white;
+          color: var(--primary-bg);
           font-size: 1.5rem;
-          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+          box-shadow: var(--shadow-dark);
           transition: var(--transition-fast);
           flex-shrink: 0;
         }
 
         .logo-icon:hover {
-          transform: rotate(360deg) scale(1.1);
-          box-shadow: var(--shadow-glow);
+          transform: rotate(15deg) scale(1.1);
+          box-shadow: 0 0 20px rgba(100, 255, 218, 0.15);
         }
 
         .logo-text {
@@ -194,10 +206,6 @@ const Navbar = () => {
           color: var(--text-light);
           font-size: 1.4rem;
           font-weight: 700;
-          background: linear-gradient(135deg, var(--accent-emerald) 0%, var(--accent-teal) 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
           margin-bottom: 0;
         }
 
@@ -216,10 +224,10 @@ const Navbar = () => {
           transform: translateY(-50%);
           width: 35px;
           height: 35px;
-          background: rgba(16, 185, 129, 0.2);
+          background: var(--secondary-bg);
           border: 1px solid var(--border-color);
           border-radius: 50%;
-          color: var(--accent-emerald);
+          color: var(--text-muted);
           font-size: 0.9rem;
           transition: var(--transition-fast);
           display: ${isOpen || !isMobile ? 'flex' : 'none'};
@@ -228,9 +236,10 @@ const Navbar = () => {
         }
 
         .toggle-btn:hover {
-          background: rgba(16, 185, 129, 0.3);
-          transform: translateY(-50%) rotate(180deg) scale(1.1);
-          box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+          background: var(--accent-green);
+          color: var(--primary-bg);
+          transform: translateY(-50%) scale(1.1);
+          box-shadow: var(--shadow-dark);
         }
 
         /* Navigation Items */
@@ -249,7 +258,7 @@ const Navbar = () => {
         }
 
         .nav-items-container::-webkit-scrollbar-thumb {
-          background: var(--accent-emerald);
+          background: var(--accent-green);
           border-radius: 2px;
         }
 
@@ -296,7 +305,7 @@ const Navbar = () => {
           left: -100%;
           width: 100%;
           height: 100%;
-          background: linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.1) 50%, transparent 100%);
+          background: linear-gradient(90deg, transparent 0%, rgba(100, 255, 218, 0.05) 50%, transparent 100%);
           transition: var(--transition-fast);
         }
 
@@ -305,17 +314,17 @@ const Navbar = () => {
         }
 
         .nav-link:hover {
-          color: var(--text-light);
-          background: rgba(16, 185, 129, 0.1);
+          color: var(--accent-green);
+          background: rgba(100, 255, 218, 0.05);
           border-color: var(--border-color);
           transform: translateX(5px);
         }
 
         .nav-item.active .nav-link {
-          color: var(--accent-emerald);
-          background: rgba(16, 185, 129, 0.15);
-          border-color: var(--accent-emerald);
-          box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+          color: var(--accent-green);
+          background: rgba(100, 255, 218, 0.08);
+          border-color: var(--accent-green);
+          box-shadow: 0 0 15px rgba(100, 255, 218, 0.1);
         }
 
         .nav-item.active::after {
@@ -326,9 +335,8 @@ const Navbar = () => {
           transform: translateY(-50%);
           width: 4px;
           height: 70%;
-          background: linear-gradient(180deg, var(--accent-emerald) 0%, var(--accent-teal) 100%);
+          background: var(--accent-green);
           border-radius: 0 4px 4px 0;
-          box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
         }
 
         .nav-icon {
@@ -343,12 +351,12 @@ const Navbar = () => {
         }
 
         .nav-link:hover .nav-icon {
-          transform: scale(1.2) rotate(5deg);
+          transform: scale(1.1);
         }
 
         .nav-item.active .nav-icon {
           transform: scale(1.1);
-          filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5));
+          color: var(--accent-green);
         }
 
         .nav-text {
@@ -367,7 +375,8 @@ const Navbar = () => {
           left: 90px;
           top: 50%;
           transform: translateY(-50%);
-          background: var(--primary-dark);
+          background: var(--secondary-bg);
+          border: 1px solid var(--border-color);
           color: var(--text-light);
           padding: 0.5rem 0.75rem;
           border-radius: 8px;
@@ -378,8 +387,7 @@ const Navbar = () => {
           visibility: hidden;
           transition: var(--transition-fast);
           z-index: 1060;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-          border: 1px solid var(--border-color);
+          box-shadow: var(--shadow-dark);
         }
 
         .nav-tooltip::before {
@@ -392,7 +400,7 @@ const Navbar = () => {
           height: 0;
           border-top: 6px solid transparent;
           border-bottom: 6px solid transparent;
-          border-right: 6px solid var(--primary-dark);
+          border-right: 6px solid var(--border-color);
         }
 
         .nav-item:hover .nav-tooltip {
@@ -409,50 +417,22 @@ const Navbar = () => {
           transform: translateX(-50%);
           width: 45px;
           height: 45px;
-          background: rgba(16, 185, 129, 0.2);
+          background: var(--secondary-bg);
           border: 1px solid var(--border-color);
           border-radius: 50%;
-          color: var(--accent-emerald);
+          color: var(--text-muted);
           font-size: 1.1rem;
           transition: var(--transition-fast);
           display: ${isMobile ? 'none' : 'flex'};
           align-items: center;
           justify-content: center;
-          backdrop-filter: blur(10px);
         }
 
         .bottom-toggle:hover {
-          background: rgba(16, 185, 129, 0.3);
+          background: var(--accent-green);
+          color: var(--primary-bg);
           transform: translateX(-50%) scale(1.1);
-          box-shadow: var(--shadow-glow);
-        }
-
-        /* Floating Particles Animation */
-        .particles {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          pointer-events: none;
-        }
-
-        .particle {
-          position: absolute;
-          width: 3px;
-          height: 3px;
-          background: var(--accent-emerald);
-          border-radius: 50%;
-          opacity: 0.3;
-          animation: float 6s infinite ease-in-out;
-        }
-
-        .particle:nth-child(1) { left: 20%; animation-delay: 0s; }
-        .particle:nth-child(2) { left: 50%; animation-delay: 2s; }
-        .particle:nth-child(3) { left: 80%; animation-delay: 4s; }
-
-        @keyframes float {
-          0%, 100% { transform: translateY(100vh) scale(0); opacity: 0; }
-          50% { transform: translateY(50vh) scale(1); opacity: 0.3; }
+          box-shadow: var(--shadow-dark);
         }
 
         /* Content Spacer */
@@ -485,18 +465,11 @@ const Navbar = () => {
       </button>
 
       {/* Main Sidebar */}
-      <nav 
+      <nav
         className="custom-sidebar"
         onMouseEnter={() => !isMobile && setIsHovering(true)}
         onMouseLeave={() => !isMobile && setIsHovering(false)}
       >
-        {/* Floating Particles */}
-        <div className="particles">
-          <div className="particle"></div>
-          <div className="particle"></div>
-          <div className="particle"></div>
-        </div>
-
         {/* Header */}
         <div className="sidebar-header">
           <div className="logo-container">
@@ -508,7 +481,7 @@ const Navbar = () => {
               <p className="logo-subtitle">Pro Dashboard</p>
             </div>
           </div>
-          
+
           <button className="toggle-btn" onClick={toggleSidebar}>
             <i className={`fas ${isMobile ? 'fa-times' : (isOpen ? 'fa-chevron-left' : 'fa-chevron-right')}`} />
           </button>
@@ -522,13 +495,13 @@ const Navbar = () => {
               className={`nav-item ${activeItem === item.id ? 'active' : ''}`}
               onClick={() => handleNavigation(item.id)}
             >
-              <a href="#" className="nav-link">
+              <Link to={item.path} className="nav-link">
                 <div className="nav-icon">
                   <i className={item.icon} />
                 </div>
                 <span className="nav-text">{item.label}</span>
                 <div className="nav-tooltip">{item.label}</div>
-              </a>
+              </Link>
             </div>
           ))}
         </div>

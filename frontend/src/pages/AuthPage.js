@@ -8,9 +8,16 @@ const AuthPage = () => {
     password: '',
     confirmPassword: ''
   });
-const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  
+  const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com';
+
   const toggleForm = () => {
     setIsLogin(!isLogin);
+    setErrorMessage('');
+    setSuccessMessage('');
   };
 
   const handleInputChange = (e) => {
@@ -19,20 +26,85 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
       ...formData,
       [name]: value
     });
+    // Clear messages when user starts typing
+    if (errorMessage || successMessage) {
+      setErrorMessage('');
+      setSuccessMessage('');
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLogin) {
-      // Handle login logic
-      console.log('Login data:', { email: formData.email, password: formData.password });
-    } else {
-      // Handle signup logic
-      if (formData.password !== formData.confirmPassword) {
-        alert("Passwords don't match!");
-        return;
+    setIsLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      if (isLogin) {
+        // Handle login
+        const response = await fetch(`${BASE_URL}/api/v1/user/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          setSuccessMessage('Login successful! Redirecting...');
+          // Store token and user data
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          // Redirect to dashboard after a brief delay
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 1500);
+        } else {
+          setErrorMessage(data.message || 'Login failed. Please try again.');
+        }
+      } else {
+        // Handle signup
+        if (formData.password !== formData.confirmPassword) {
+          setErrorMessage("Passwords don't match!");
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await fetch(`${BASE_URL}/api/v1/user/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: formData.companyName,
+            email: formData.email,
+            password: formData.password
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          setSuccessMessage('Account created successfully! You can now login.');
+          // Switch to login form after successful registration
+          setTimeout(() => {
+            setIsLogin(true);
+            setSuccessMessage('');
+          }, 3000);
+        } else {
+          setErrorMessage(data.message || 'Registration failed. Please try again.');
+        }
       }
-      console.log('Signup data:', formData);
+    } catch (error) {
+      console.error('Auth error:', error);
+      setErrorMessage('Network error. Please check your connection and try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -423,9 +495,13 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
           overflow: hidden;
           margin-top: 0.5rem;
           letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
         }
 
-        .auth-btn:hover {
+        .auth-btn:hover:not(:disabled) {
           transform: translateY(-3px);
           box-shadow: 0 10px 20px rgba(39, 174, 96, 0.3);
           letter-spacing: 1px;
@@ -433,6 +509,11 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
 
         .auth-btn:active {
           transform: translateY(-1px);
+        }
+
+        .auth-btn:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
         }
 
         .auth-toggle {
@@ -456,6 +537,26 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
         .auth-toggle-btn:hover {
           color: var(--accent-mint);
           background: rgba(144, 238, 144, 0.1);
+        }
+
+        .message {
+          padding: 0.75rem;
+          border-radius: 8px;
+          margin-bottom: 1rem;
+          text-align: center;
+          font-weight: 500;
+        }
+
+        .error-message {
+          background: rgba(220, 53, 69, 0.2);
+          color: #f8d7da;
+          border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .success-message {
+          background: rgba(25, 135, 84, 0.2);
+          color: #d1e7dd;
+          border: 1px solid rgba(25, 135, 84, 0.3);
         }
 
         .floating-icon {
@@ -573,6 +674,18 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
             </p>
           </div>
 
+          {errorMessage && (
+            <div className="message error-message">
+              <i className="fas fa-exclamation-circle"></i> {errorMessage}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="message success-message">
+              <i className="fas fa-check-circle"></i> {successMessage}
+            </div>
+          )}
+
           <form className="auth-form" onSubmit={handleSubmit}>
             {!isLogin && (
               <div className="form-group">
@@ -585,6 +698,7 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
                   value={formData.companyName}
                   onChange={handleInputChange}
                   required
+                  disabled={isLoading}
                 />
               </div>
             )}
@@ -599,6 +713,7 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
                 value={formData.email}
                 onChange={handleInputChange}
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -612,6 +727,7 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
                 value={formData.password}
                 onChange={handleInputChange}
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -626,6 +742,7 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required
+                  disabled={isLoading}
                 />
               </div>
             )}
@@ -634,8 +751,18 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
               type="submit" 
               className="auth-btn"
               onClick={handleButtonClick}
+              disabled={isLoading}
             >
-              {isLogin ? 'Sign In' : 'Create Account'}
+              {isLoading ? (
+                <>
+                  <i className="fas fa-spinner fa-spin"></i>
+                  {isLogin ? 'Signing In...' : 'Creating Account...'}
+                </>
+              ) : (
+                <>
+                  {isLogin ? 'Sign In' : 'Create Account'}
+                </>
+              )}
             </button>
           </form>
 
@@ -646,6 +773,7 @@ const BASE_URL = 'https://hackout2025-backend-infinity.onrender.com'
                 type="button" 
                 className="auth-toggle-btn"
                 onClick={toggleForm}
+                disabled={isLoading}
               >
                 {isLogin ? 'Sign Up' : 'Sign In'}
               </button>

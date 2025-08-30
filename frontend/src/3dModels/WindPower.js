@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls = false }) => {
+const WindPower = ({ windTurbineCount = 1, electrolysisCount = 1, showControls = false }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -10,7 +10,7 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
   const animationFrameId = useRef(null);
   const facilitiesRef = useRef({});
   const particleSystemsRef = useRef({});
-  const prevSolarCountRef = useRef(solarPanelCount);
+  const prevWindCountRef = useRef(windTurbineCount);
   const prevElectrolysisCountRef = useRef(electrolysisCount);
 
   // Custom OrbitControls implementation
@@ -139,18 +139,22 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
 
     // Materials
     const materials = {
-      solarPanel: new THREE.MeshPhysicalMaterial({
-        color: 0x1a4488,
-        metalness: 0.1,
-        roughness: 0.05,
-        reflectivity: 0.9,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.1
+      turbineBlade: new THREE.MeshPhysicalMaterial({
+        color: 0xf0f0f0,
+        metalness: 0.3,
+        roughness: 0.1,
+        clearcoat: 0.8,
+        clearcoatRoughness: 0.2
       }),
-      frame: new THREE.MeshPhysicalMaterial({
-        color: 0x2a2a2a,
-        metalness: 0.95,
-        roughness: 0.1
+      turbineHub: new THREE.MeshPhysicalMaterial({
+        color: 0xe0e0e0,
+        metalness: 0.5,
+        roughness: 0.2
+      }),
+      tower: new THREE.MeshPhysicalMaterial({
+        color: 0xdcdcdc,
+        metalness: 0.4,
+        roughness: 0.3
       }),
       metal: new THREE.MeshPhysicalMaterial({
         color: 0x666666,
@@ -175,76 +179,105 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
       })
     };
 
-    // 1. Solar Panel Farm (dynamic count)
-    const createSolarFarm = () => {
+    // 1. Wind Turbine Farm (dynamic count)
+    const createWindFarm = () => {
       const farm = new THREE.Group();
       
-      // Ensure at least 1 solar panel
-      const actualSolarCount = Math.max(1, solarPanelCount);
+      const actualWindCount = Math.max(1, windTurbineCount);
       
-      for (let i = 0; i < actualSolarCount; i++) {
-        const panel = new THREE.Group();
+      for (let i = 0; i < actualWindCount; i++) {
+        const turbine = new THREE.Group();
         
-        // Panel surface
-        const panelGeo = new THREE.BoxGeometry(1.5, 0.06, 0.8);
-        const panelMesh = new THREE.Mesh(panelGeo, materials.solarPanel);
-        panelMesh.position.y = 0.8;
-        panelMesh.castShadow = true;
-        panel.add(panelMesh);
+        // Tower
+        const towerGeo = new THREE.CylinderGeometry(0.3, 0.5, 12, 16);
+        const tower = new THREE.Mesh(towerGeo, materials.tower);
+        tower.position.y = 6;
+        tower.castShadow = true;
+        tower.receiveShadow = true;
+        turbine.add(tower);
         
-        // Frame
-        const frameGeo = new THREE.BoxGeometry(1.6, 0.1, 0.9);
-        const frame = new THREE.Mesh(frameGeo, materials.frame);
-        frame.position.y = 0.8;
-        frame.castShadow = true;
-        panel.add(frame);
+        // Nacelle (housing for generator)
+        const nacelleGeo = new THREE.BoxGeometry(2, 1.2, 0.8);
+        const nacelle = new THREE.Mesh(nacelleGeo, materials.turbineHub);
+        nacelle.position.set(0, 12, 0);
+        nacelle.castShadow = true;
+        turbine.add(nacelle);
         
-        // Stand
-        const standGeo = new THREE.CylinderGeometry(0.05, 0.08, 0.8, 12);
-        const stand = new THREE.Mesh(standGeo, materials.metal);
-        stand.position.y = 0.4;
-        stand.castShadow = true;
-        panel.add(stand);
+        // Hub
+        const hubGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.6, 16);
+        const hub = new THREE.Mesh(hubGeo, materials.turbineHub);
+        hub.position.set(1.3, 12, 0);
+        hub.rotation.z = Math.PI / 2;
+        hub.castShadow = true;
+        turbine.add(hub);
         
-        // Base
-        const baseGeo = new THREE.CylinderGeometry(0.15, 0.2, 0.1, 12);
-        const base = new THREE.Mesh(baseGeo, materials.metal);
-        base.position.y = 0.05;
-        base.castShadow = true;
-        panel.add(base);
+        // Rotor group (for rotation animation)
+        const rotor = new THREE.Group();
+        rotor.position.set(1.6, 12, 0);
         
-        panel.rotation.x = -Math.PI / 8;
+        // Blades
+        for (let j = 0; j < 3; j++) {
+          const blade = new THREE.Group();
+          
+          // Blade geometry - elongated and twisted
+          const bladeGeo = new THREE.BoxGeometry(0.15, 6, 0.9);
+          const bladeMesh = new THREE.Mesh(bladeGeo, materials.turbineBlade);
+          bladeMesh.position.y = 3;
+          bladeMesh.castShadow = true;
+          blade.add(bladeMesh);
+          
+          // Blade root
+          const rootGeo = new THREE.CylinderGeometry(0.2, 0.15, 0.5, 12);
+          const root = new THREE.Mesh(rootGeo, materials.turbineHub);
+          root.position.y = 0.25;
+          root.castShadow = true;
+          blade.add(root);
+          
+          blade.rotation.x = (j * 2 * Math.PI) / 3;
+          rotor.add(blade);
+        }
         
-        // Arrange panels in a line for small counts, grid for larger
-        if (actualSolarCount <= 5) {
-          panel.position.set(i * 2.5 - 15, 0, -8);
+        turbine.add(rotor);
+        turbine.userData.rotor = rotor; // Store reference for animation
+        
+        // Foundation
+        const foundationGeo = new THREE.CylinderGeometry(1.5, 2, 0.5, 16);
+        const foundation = new THREE.Mesh(foundationGeo, materials.concrete);
+        foundation.position.y = 0.25;
+        foundation.castShadow = true;
+        foundation.receiveShadow = true;
+        turbine.add(foundation);
+        
+        // Position turbines
+        if (actualWindCount <= 5) {
+          turbine.position.set(i * 8 - 16, 0, -10);
         } else {
-          const cols = Math.ceil(Math.sqrt(actualSolarCount));
+          const cols = Math.ceil(Math.sqrt(actualWindCount));
           const row = Math.floor(i / cols);
           const col = i % cols;
-          panel.position.set(
-            (col - cols/2) * 2.5 - 15,
+          turbine.position.set(
+            (col - cols/2) * 8 - 16,
             0,
-            (row - Math.ceil(actualSolarCount/cols)/2) * 2.2 - 8
+            (row - Math.ceil(actualWindCount/cols)/2) * 8 - 10
           );
         }
         
-        farm.add(panel);
+        farm.add(turbine);
       }
       
-      facilitiesRef.current.solarFarm = farm;
+      facilitiesRef.current.windFarm = farm;
       scene.add(farm);
       return farm;
     };
 
-    // 2. Power Grid Node (Substation)
+    // 2. Power Grid Node (Substation) - Similar to solar version
     const createPowerGrid = () => {
       const grid = new THREE.Group();
       
       // Main transformer building
       const buildingGeo = new THREE.BoxGeometry(3, 4, 2);
       const building = new THREE.Mesh(buildingGeo, materials.concrete);
-      building.position.set(-5, 2, 0);
+      building.position.set(-5, 2, 2);
       building.castShadow = true;
       building.receiveShadow = true;
       grid.add(building);
@@ -252,19 +285,19 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
       // Electrical equipment
       const equipGeo = new THREE.BoxGeometry(1, 1.5, 0.8);
       const equip1 = new THREE.Mesh(equipGeo, materials.metal);
-      equip1.position.set(-4, 0.75, 1.5);
+      equip1.position.set(-4, 0.75, 3.5);
       equip1.castShadow = true;
       grid.add(equip1);
       
       const equip2 = new THREE.Mesh(equipGeo, materials.metal);
-      equip2.position.set(-4, 0.75, -1.5);
+      equip2.position.set(-4, 0.75, 0.5);
       equip2.castShadow = true;
       grid.add(equip2);
       
       // Power lines support tower
       const towerGeo = new THREE.CylinderGeometry(0.1, 0.15, 8, 8);
       const tower = new THREE.Mesh(towerGeo, materials.metal);
-      tower.position.set(-5, 4, 0);
+      tower.position.set(-5, 4, 2);
       tower.castShadow = true;
       grid.add(tower);
       
@@ -277,7 +310,6 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
     const createElectrolysisUnits = () => {
       const unitsGroup = new THREE.Group();
       
-      // Ensure at least 1 electrolysis unit
       const actualElectrolysisCount = Math.max(1, electrolysisCount);
       
       for (let i = 0; i < actualElectrolysisCount; i++) {
@@ -326,7 +358,7 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
         
         // Position units
         const spacing = 6;
-        unit.position.set(5 + (i - (actualElectrolysisCount - 1) / 2) * spacing, 0, 0);
+        unit.position.set(5 + (i - (actualElectrolysisCount - 1) / 2) * spacing, 0, 5);
         unitsGroup.add(unit);
       }
       
@@ -342,7 +374,7 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
       for (let i = 0; i < 3; i++) {
         const tankGeo = new THREE.CylinderGeometry(1.2, 1.2, 4, 16);
         const tank = new THREE.Mesh(tankGeo, materials.tank);
-        tank.position.set(18, 2, (i - 1) * 3);
+        tank.position.set(18, 2, 5 + (i - 1) * 3);
         tank.castShadow = true;
         tank.receiveShadow = true;
         storage.add(tank);
@@ -350,12 +382,12 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
         // Tank caps
         const capGeo = new THREE.SphereGeometry(1.2, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
         const topCap = new THREE.Mesh(capGeo, materials.tank);
-        topCap.position.set(18, 4, (i - 1) * 3);
+        topCap.position.set(18, 4, 5 + (i - 1) * 3);
         storage.add(topCap);
         
         const bottomCap = new THREE.Mesh(capGeo, materials.tank);
         bottomCap.rotation.x = Math.PI;
-        bottomCap.position.set(18, 0, (i - 1) * 3);
+        bottomCap.position.set(18, 0, 5 + (i - 1) * 3);
         storage.add(bottomCap);
         
         // Tank labels
@@ -366,7 +398,7 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
           opacity: 0.9
         });
         const label = new THREE.Mesh(labelGeo, labelMat);
-        label.position.set(19.3, 2.5, (i - 1) * 3);
+        label.position.set(19.3, 2.5, 5 + (i - 1) * 3);
         label.rotation.y = -Math.PI / 2;
         storage.add(label);
       }
@@ -383,7 +415,7 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
       // Distribution center building
       const buildingGeo = new THREE.BoxGeometry(4, 3, 3);
       const building = new THREE.Mesh(buildingGeo, materials.concrete);
-      building.position.set(28, 1.5, 0);
+      building.position.set(28, 1.5, 5);
       building.castShadow = true;
       building.receiveShadow = true;
       distribution.add(building);
@@ -391,7 +423,7 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
       // Loading bay
       const bayGeo = new THREE.BoxGeometry(2, 2.5, 1);
       const bay = new THREE.Mesh(bayGeo, materials.metal);
-      bay.position.set(26, 1.25, 2.5);
+      bay.position.set(26, 1.25, 7.5);
       bay.castShadow = true;
       distribution.add(bay);
       
@@ -428,7 +460,7 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
           });
         });
         
-        truck.position.set(28 + i * 4, 0, 5);
+        truck.position.set(28 + i * 4, 0, 10);
         distribution.add(truck);
       }
       
@@ -474,28 +506,28 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
     const createPowerLines = () => {
       const lines = new THREE.Group();
       
-      // Calculate average solar farm position
-      const actualSolarCount = Math.max(1, solarPanelCount);
-      const avgSolarPos = new THREE.Vector3();
-      if (actualSolarCount === 1) {
-        avgSolarPos.set(-15, 3, -8);
-      } else if (actualSolarCount <= 5) {
-        avgSolarPos.set(-15 + (actualSolarCount - 1) * 1.25, 3, -8);
+      // Calculate average wind farm position
+      const actualWindCount = Math.max(1, windTurbineCount);
+      const avgWindPos = new THREE.Vector3();
+      if (actualWindCount === 1) {
+        avgWindPos.set(-16, 8, -10);
+      } else if (actualWindCount <= 5) {
+        avgWindPos.set(-16 + (actualWindCount - 1) * 4, 8, -10);
       } else {
-        avgSolarPos.set(-15, 3, -8);
+        avgWindPos.set(-16, 8, -10);
       }
       
-      // From solar farm to grid
+      // From wind farm to grid
       const curve1 = new THREE.CatmullRomCurve3([
-        avgSolarPos,
-        new THREE.Vector3(-10, 4, -4),
-        new THREE.Vector3(-5, 4, 0)
+        avgWindPos,
+        new THREE.Vector3(-10, 6, -5),
+        new THREE.Vector3(-5, 4, 2)
       ]);
       
       const lineGeo1 = new THREE.TubeGeometry(curve1, 20, 0.02, 8, false);
       const lineMat = new THREE.MeshBasicMaterial({ 
-        color: 0xffff00,
-        emissive: 0xffff00,
+        color: 0x00ffff,
+        emissive: 0x00ffff,
         emissiveIntensity: 0.3
       });
       const line1 = new THREE.Mesh(lineGeo1, lineMat);
@@ -506,9 +538,9 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
       for (let i = 0; i < actualElectrolysisCount; i++) {
         const unitX = 5 + (i - (actualElectrolysisCount - 1) / 2) * 6;
         const curve2 = new THREE.CatmullRomCurve3([
-          new THREE.Vector3(-3, 4, 0),
-          new THREE.Vector3(1, 3.5, 0),
-          new THREE.Vector3(unitX, 3, 0)
+          new THREE.Vector3(-3, 4, 2),
+          new THREE.Vector3(1, 3.5, 3),
+          new THREE.Vector3(unitX, 3, 5)
         ]);
         
         const lineGeo2 = new THREE.TubeGeometry(curve2, 20, 0.02, 8, false);
@@ -530,10 +562,10 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
         const unitX = 5 + (i - (actualElectrolysisCount - 1) / 2) * 6;
         
         const curve = new THREE.CatmullRomCurve3([
-          new THREE.Vector3(unitX + 2, 2.5, 0),
-          new THREE.Vector3(unitX + 5, 2.8, 0),
-          new THREE.Vector3(15, 2.5, 0),
-          new THREE.Vector3(18, 2.5, 0)
+          new THREE.Vector3(unitX + 2, 2.5, 5),
+          new THREE.Vector3(unitX + 5, 2.8, 5),
+          new THREE.Vector3(15, 2.5, 5),
+          new THREE.Vector3(18, 2.5, 5)
         ]);
         
         const pipeGeo = new THREE.TubeGeometry(curve, 30, 0.08, 12, false);
@@ -544,9 +576,9 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
       
       // From storage to distribution
       const curve2 = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(19.5, 2, 0),
-        new THREE.Vector3(23, 1.8, 0),
-        new THREE.Vector3(26, 1.5, 0)
+        new THREE.Vector3(19.5, 2, 5),
+        new THREE.Vector3(23, 1.8, 5),
+        new THREE.Vector3(26, 1.5, 5)
       ]);
       
       const pipeGeo2 = new THREE.TubeGeometry(curve2, 20, 0.06, 12, false);
@@ -559,7 +591,7 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
     };
 
     // Build facilities
-    createSolarFarm();
+    createWindFarm();
     createPowerGrid();
     createElectrolysisUnits();
     createStorageTanks();
@@ -568,21 +600,21 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
     createHydrogenPipes();
 
     // Create energy flow particles with proper connections
-    const actualSolarCount = Math.max(1, solarPanelCount);
-    const avgSolarPos = new THREE.Vector3();
-    if (actualSolarCount === 1) {
-      avgSolarPos.set(-15, 3, -8);
-    } else if (actualSolarCount <= 5) {
-      avgSolarPos.set(-15 + (actualSolarCount - 1) * 1.25, 3, -8);
+    const actualWindCount = Math.max(1, windTurbineCount);
+    const avgWindPos = new THREE.Vector3();
+    if (actualWindCount === 1) {
+      avgWindPos.set(-16, 8, -10);
+    } else if (actualWindCount <= 5) {
+      avgWindPos.set(-16 + (actualWindCount - 1) * 4, 8, -10);
     } else {
-      avgSolarPos.set(-15, 3, -8);
+      avgWindPos.set(-16, 8, -10);
     }
 
     particleSystemsRef.current = {
-      solarToGrid: createParticleSystem(
-        avgSolarPos,
-        new THREE.Vector3(-5, 4, 0),
-        0xffff00,
+      windToGrid: createParticleSystem(
+        avgWindPos,
+        new THREE.Vector3(-5, 4, 2),
+        0x00ffff,
         30
       )
     };
@@ -592,16 +624,16 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
     for (let i = 0; i < actualElectrolysisCount; i++) {
       const unitX = 5 + (i - (actualElectrolysisCount - 1) / 2) * 6;
       particleSystemsRef.current[`gridToElectrolysis${i}`] = createParticleSystem(
-        new THREE.Vector3(-3, 4, 0),
-        new THREE.Vector3(unitX, 3, 0),
+        new THREE.Vector3(-3, 4, 2),
+        new THREE.Vector3(unitX, 3, 5),
         0x00ff00,
         25
       );
       
       // Hydrogen flow from each unit to storage
       particleSystemsRef.current[`hydrogenFlow${i}`] = createParticleSystem(
-        new THREE.Vector3(unitX + 2, 2.5, 0),
-        new THREE.Vector3(18, 2.5, 0),
+        new THREE.Vector3(unitX + 2, 2.5, 5),
+        new THREE.Vector3(18, 2.5, 5),
         0x4a90e2,
         30
       );
@@ -609,8 +641,8 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
 
     // Distribution flow
     particleSystemsRef.current.distribution = createParticleSystem(
-      new THREE.Vector3(19.5, 2, 0),
-      new THREE.Vector3(26, 1.5, 0),
+      new THREE.Vector3(19.5, 2, 5),
+      new THREE.Vector3(26, 1.5, 5),
       0x0080ff,
       20
     );
@@ -642,7 +674,7 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
           bubble.position.set(
             unitX + (Math.random() - 0.5) * 2,
             0.5 + Math.random() * 2,
-            (Math.random() - 0.5) * 2
+            5 + (Math.random() - 0.5) * 2
           );
           
           bubble.userData = {
@@ -741,6 +773,17 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
         const time = Date.now() * 0.001;
         
+        // Animate wind turbine rotors
+        if (facilitiesRef.current.windFarm) {
+          facilitiesRef.current.windFarm.children.forEach((turbine, index) => {
+            if (turbine.userData.rotor) {
+              // Variable rotation speed based on wind
+              const windSpeed = 1 + Math.sin(time * 0.1 + index * 0.5) * 0.3;
+              turbine.userData.rotor.rotation.x += 0.02 * windSpeed;
+            }
+          });
+        }
+        
         // Animate energy flow particles
         Object.values(particleSystemsRef.current).forEach(system => {
           system.data.forEach(particleData => {
@@ -772,7 +815,7 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
               bubble.position.set(
                 bubble.userData.unitX + (Math.random() - 0.5) * 2,
                 0.5,
-                (Math.random() - 0.5) * 2
+                5 + (Math.random() - 0.5) * 2
               );
               bubble.userData.life = 200 + Math.random() * 100;
             }
@@ -781,14 +824,6 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
             bubble.material.opacity = Math.max(0.2, 
               0.7 - (4 - bubble.position.y) / 4 * 0.5
             );
-          });
-        }
-        
-        // Solar panel micro-rotations (tracking sun)
-        if (facilitiesRef.current.solarFarm) {
-          facilitiesRef.current.solarFarm.children.forEach((panel, index) => {
-            const offset = index * 0.1;
-            panel.rotation.y = Math.sin(time * 0.1 + offset) * 0.05;
           });
         }
         
@@ -841,25 +876,25 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
   // Rebuild scene when counts change
   useEffect(() => {
     if (sceneRef.current && 
-        (prevSolarCountRef.current !== solarPanelCount || 
+        (prevWindCountRef.current !== windTurbineCount || 
          prevElectrolysisCountRef.current !== electrolysisCount)) {
       
-      prevSolarCountRef.current = solarPanelCount;
+      prevWindCountRef.current = windTurbineCount;
       prevElectrolysisCountRef.current = electrolysisCount;
       
       rebuildScene();
     }
-  }, [solarPanelCount, electrolysisCount]);
+  }, [windTurbineCount, electrolysisCount]);
 
   return (
-    <div className="w-full h-screen relative overflow-hidden bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="w-full h-screen relative overflow-hidden bg-gradient-to-br from-gray-800 via-blue-900 to-cyan-900">
       {showControls && (
         <div className="absolute top-4 left-4 bg-black/20 backdrop-blur-md rounded-lg p-4 text-white z-10">
-          <h3 className="text-lg font-bold mb-4">Solar Hydrogen Facility</h3>
+          <h3 className="text-lg font-bold mb-4">Wind Hydrogen Facility</h3>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Solar Panels: {solarPanelCount}
+                Wind Turbines: {windTurbineCount}
               </label>
             </div>
             <div>
@@ -883,4 +918,4 @@ const SolarPanel = ({ solarPanelCount = 1, electrolysisCount = 1, showControls =
   );
 };
 
-export default SolarPanel;
+export default WindPower;
