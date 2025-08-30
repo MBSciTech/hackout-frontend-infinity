@@ -378,7 +378,7 @@ const Dashboard = () => {
 
                 .dashboard {
                     min-height: 100vh;
-                    margin-left: 80px;
+                    margin-left: 0px;
                     background-color: var(--white-off);
                     color: var(--text-dark);
                     padding: 30px;
