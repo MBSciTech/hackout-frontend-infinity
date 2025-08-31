@@ -332,22 +332,34 @@ useEffect(() => {
     }
   };
 
+  const handleConvert = () => {
+    navigate('/assessment');
+  }
+
   const toggleMapView = () => {
     setMapExpanded(!mapExpanded);
   };
 
   const handleButtonClick = (e) => {
     const button = e.currentTarget;
+  
     gsap.to(button, {
       scale: 0.95,
       duration: 0.1,
       yoyo: true,
       repeat: 1,
       onComplete: () => {
-        navigate('/auth');
-      }
+        const token = localStorage.getItem("token");
+  
+        if (token) {
+          navigate("/dashboard");
+        } else {
+          navigate("/auth")
+        }
+      },
     });
   };
+  
 
   // Component for creating hydrogen atoms
   const HydrogenAtom = ({ size = 40, className = "", style = {} }) => (
@@ -1579,7 +1591,7 @@ useEffect(() => {
                   <button className="btn-primary-custom" onClick={handleButtonClick}>
                     Start From strach <i className="fas fa-arrow-right ms-2"></i>
                   </button>
-                  <button className="btn-outline-custom" onClick={() => scrollToSection('features')}>
+                  <button className="btn-outline-custom" onClick={() => handleConvert}>
                     convert existing <i className="fas fa-book-open ms-2"></i>
                   </button>
                 </div>
