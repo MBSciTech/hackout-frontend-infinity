@@ -9,6 +9,7 @@ import WindPower from './3dModels/WindPower';
 import Map from './pages/Map';
 import GreenHorizon from './pages/GreenHorizon/GreenHorizon';
 import PlantAssessment from './pages/PlantAssessment/PlantAssessment';
+import Machinery from './pages/Machinary';
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -37,11 +38,12 @@ function Layout() {
           <Route path="/map" element={<Map />} />
           <Route path='/assessment' element={<PlantAssessment/>} />
           <Route path='/news' element={<GreenHorizon/>} />
+          <Route path='/machinary' element={<Machinery/>} />
 
         </Routes>
 
       </main>
-      {!shouldHideLayout && <Footer />}
+      
     </>
   );
 }

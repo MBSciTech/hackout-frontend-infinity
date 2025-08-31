@@ -60,9 +60,11 @@ const Dashboard = () => {
                     }
                 } else {
                     console.warn('No data found in localStorage');
+                    navigate('/qna'); // Redirect to /qna if no data
                 }
             } catch (error) {
                 console.error('Error fetching data from localStorage:', error);
+                navigate('/qna'); // Also redirect on error
             } finally {
                 setLoading(false);
             }
