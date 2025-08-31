@@ -6,19 +6,23 @@ import './Navbar.css';
 const Navbar = () => {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const menuItems = [
-    { id: 'dashboard', icon: 'fas fa-tachometer-alt', path: '/dashboard', tooltip: 'Dashboard' },
-    { id: 'map', icon: 'fas fa-map-marked-alt', path: '/map', tooltip: 'Plant Locations' },
-    { id: 'analytics', icon: 'fas fa-chart-line', path: '/analytics', tooltip: 'Analytics' },
-    { id: 'infrastructure', icon: 'fas fa-industry', path: '/infrastructure', tooltip: 'Infrastructure' },
-    { id: 'settings', icon: 'fas fa-cog', path: '/settings', tooltip: 'Settings' },
-    { id: 'profile', icon: 'fas fa-user-circle', path: '/profile', tooltip: 'Profile' },
+    { id: 'dashboard', icon: 'fas fa-tachometer-alt', path: '/dashboard' },
+    { id: 'map', icon: 'fas fa-map-marked-alt', path: '/map' },
+    { id: 'News', icon: 'fas fa-newspaper', path: '/news' },
+    { id: 'Machinary', icon: 'fas fa-screwdriver', path: '/Machinary' },
+    { id: 'settings', icon: 'fas fa-cog', path: '/settings' },
+    { id: 'profile', icon: 'fas fa-user-circle', path: '/profile' },
   ];
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
+      if (window.innerWidth > 768) {
+        setIsExpanded(false);
+      }
     };
 
     window.addEventListener('resize', handleResize);
@@ -40,11 +44,18 @@ const Navbar = () => {
 
   const handleNavigation = (itemId) => {
     setActiveItem(itemId);
+    if (isMobile) {
+      setIsExpanded(false);
+    }
+  };
+
+  const toggleMenu = () => {
+    setIsExpanded(!isExpanded);
   };
 
   return (
     <>
-      <nav className={`custom-sidebar ${isMobile ? 'mobile' : ''}`}>
+      <nav className={`custom-sidebar ${isMobile ? 'mobile' : ''} ${isExpanded ? 'expanded' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-container">
             <div className="logo-icon">
@@ -54,9 +65,15 @@ const Navbar = () => {
               <div className="logo-pulse"></div>
             )}
           </div>
+          
+          {isMobile && (
+            <button className="menu-toggle" onClick={toggleMenu}>
+              <i className={`fas ${isExpanded ? 'fa-times' : 'fa-bars'}`} />
+            </button>
+          )}
         </div>
 
-        <div className="nav-items-container">
+        <div className={`nav-items-container ${isExpanded ? 'expanded' : ''}`}>
           {menuItems.map((item) => (
             <div
               key={item.id}
@@ -71,7 +88,7 @@ const Navbar = () => {
                 </div>
                 {hoveredItem === item.id && !isMobile && (
                   <div className="nav-tooltip">
-                    {item.tooltip}
+                    {item.id}
                   </div>
                 )}
                 {activeItem === item.id && (
@@ -94,7 +111,11 @@ const Navbar = () => {
         )}
       </nav>
 
-      <div className={`content-spacer ${isMobile ? 'mobile' : ''}`} />
+      {isMobile && isExpanded && (
+        <div className="mobile-overlay" onClick={() => setIsExpanded(false)} />
+      )}
+
+      <div className={`content-spacer ${isMobile ? 'mobile' : ''} ${isExpanded ? 'expanded' : ''}`} />
     </>
   );
 };

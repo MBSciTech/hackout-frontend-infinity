@@ -707,6 +707,7 @@ const Dashboard = () => {
                     color: var(--text-dark);
                     padding: 30px;
                     font-family: 'Inter', sans-serif;
+                    margin-left : 80px;
                 }
 
                 .loading-screen, .error-screen {

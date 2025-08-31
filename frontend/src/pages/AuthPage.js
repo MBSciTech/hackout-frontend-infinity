@@ -148,13 +148,13 @@ const AuthPage = () => {
       particle.style.position = 'fixed';
       particle.style.width = size + 'px';
       particle.style.height = size + 'px';
-      particle.style.background = 'radial-gradient(circle, rgba(0,191,255,0.8) 0%, rgba(30,144,255,0.6) 50%, rgba(65,105,225,0.4) 100%)';
+      particle.style.background = 'radial-gradient(circle, rgba(103, 192, 144, 0.8) 0%, rgba(38, 102, 127, 0.6) 50%, rgba(18, 65, 112, 0.4) 100%)';
       particle.style.borderRadius = '50%';
       particle.style.left = Math.random() * window.innerWidth + 'px';
       particle.style.top = window.innerHeight + 'px';
       particle.style.pointerEvents = 'none';
       particle.style.zIndex = '0';
-      particle.style.boxShadow = '0 0 12px 3px rgba(0, 191, 255, 0.6)';
+      particle.style.boxShadow = '0 0 12px 3px rgba(103, 192, 144, 0.6)';
       
       document.getElementById('auth-container').appendChild(particle);
       
@@ -201,19 +201,17 @@ const AuthPage = () => {
     <>
       <style>{`
         :root {
-          --primary-dark: #0A0E1A;
-          --secondary-dark: #1A1D2E;
-          --accent-blue: #00BFFF;
-          --accent-purple: #4169E1;
-          --accent-cyan: #1E90FF;
-          --accent-light-blue: #87CEEB;
+          --primary-light: #DDF4E7;
+          --primary-green: #67C090;
+          --primary-teal: #26667F;
+          --primary-dark: #124170;
           --text-light: #FFFFFF;
           --text-muted: #B8BCC8;
-          --gradient-primary: linear-gradient(135deg, #00BFFF 0%, #4169E1 50%, #1E90FF 100%);
-          --gradient-secondary: linear-gradient(135deg, #87CEEB 0%, #00BFFF 100%);
-          --gradient-accent: linear-gradient(45deg, #4169E1, #00BFFF, #1E90FF, #87CEEB);
-          --glow-primary: 0 0 30px rgba(0, 191, 255, 0.5);
-          --glow-secondary: 0 0 20px rgba(65, 105, 225, 0.4);
+          --gradient-primary: linear-gradient(135deg, #67C090 0%, #26667F 100%);
+          --gradient-secondary: linear-gradient(135deg, #26667F 0%, #124170 100%);
+          --gradient-accent: linear-gradient(45deg, #67C090, #26667F, #124170);
+          --glow-primary: 0 0 30px rgba(103, 192, 144, 0.5);
+          --glow-secondary: 0 0 20px rgba(38, 102, 127, 0.4);
           --shadow-deep: 0 25px 60px rgba(0, 0, 0, 0.4);
         }
 
@@ -229,6 +227,7 @@ const AuthPage = () => {
           font-family: 'Inter', 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           line-height: 1.6;
           overflow-x: hidden;
+          
         }
 
         #auth-container {
@@ -237,12 +236,20 @@ const AuthPage = () => {
           align-items: center;
           justify-content: center;
           position: relative;
-          overflow: hidden;
-          padding: 2rem;
-          background: 
-            radial-gradient(circle at 25% 25%, rgba(0, 191, 255, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 75% 75%, rgba(65, 105, 225, 0.08) 0%, transparent 50%),
-            linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+          overflow: hidden;          
+          width:100%;
+          background: url('./images/plant2.gif') cover no-repeat;
+        }
+        
+        #auth-container::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, rgba(18, 65, 112, 0.85) 0%, rgba(38, 102, 127, 0.8) 100%);
+          z-index: 0;
         }
 
         .auth-bg-animation {
@@ -254,9 +261,9 @@ const AuthPage = () => {
           z-index: -1;
           opacity: 0.12;
           background: 
-            radial-gradient(circle at 20% 50%, var(--accent-cyan) 0%, transparent 60%),
-            radial-gradient(circle at 80% 20%, var(--accent-blue) 0%, transparent 60%),
-            radial-gradient(circle at 40% 80%, var(--accent-purple) 0%, transparent 60%);
+            radial-gradient(circle at 20% 50%, var(--primary-green) 0%, transparent 60%),
+            radial-gradient(circle at 80% 20%, var(--primary-teal) 0%, transparent 60%),
+            radial-gradient(circle at 40% 80%, var(--primary-dark) 0%, transparent 60%);
           animation: float 30s ease-in-out infinite;
         }
 
@@ -290,9 +297,9 @@ const AuthPage = () => {
           position: absolute;
           width: 35px;
           height: 35px;
-          background: radial-gradient(circle, #00BFFF 0%, #4169E1 100%);
+          background: radial-gradient(circle, #67C090 0%, #26667F 100%);
           border-radius: 50%;
-          box-shadow: 0 0 25px #00BFFF, 0 0 45px #4169E1;
+          box-shadow: 0 0 25px #67C090, 0 0 45px #26667F;
           animation: pulse-nucleus 4s ease-in-out infinite;
           z-index: 10;
         }
@@ -301,7 +308,7 @@ const AuthPage = () => {
           position: absolute;
           width: 180px;
           height: 180px;
-          border: 1px solid rgba(135, 206, 235, 0.4);
+          border: 1px solid rgba(221, 244, 231, 0.4);
           border-radius: 50%;
           animation: rotate-orbit 18s linear infinite;
         }
@@ -310,9 +317,9 @@ const AuthPage = () => {
           position: absolute;
           width: 14px;
           height: 14px;
-          background: radial-gradient(circle, var(--accent-light-blue) 0%, var(--accent-cyan) 100%);
+          background: radial-gradient(circle, var(--primary-light) 0%, var(--primary-green) 100%);
           border-radius: 50%;
-          box-shadow: 0 0 12px var(--accent-light-blue), 0 0 24px var(--accent-cyan);
+          box-shadow: 0 0 12px var(--primary-light), 0 0 24px var(--primary-green);
           z-index: 5;
           animation: orbit-electron 3.5s linear infinite;
         }
@@ -320,7 +327,7 @@ const AuthPage = () => {
         .energy-wave {
           position: absolute;
           border-radius: 50%;
-          border: 1px solid rgba(0, 191, 255, 0.15);
+          border: 1px solid rgba(103, 192, 144, 0.15);
         }
 
         .wave-1 {
@@ -387,90 +394,10 @@ const AuthPage = () => {
           z-index: 10;
         }
 
-        .inspiration-panel {
-          flex: 1;
-          max-width: 600px;
-          padding: 3rem;
-          background: rgba(26, 29, 46, 0.8);
-          backdrop-filter: blur(15px);
-          border: 1px solid rgba(0, 191, 255, 0.2);
-          border-radius: 25px;
-          box-shadow: var(--shadow-deep), var(--glow-secondary);
-          animation: slideInLeft 1s ease-out;
-        }
-
-        .inspiration-content h2 {
-          font-size: 2.8rem;
-          font-weight: 800;
-          background: var(--gradient-primary);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin-bottom: 1.5rem;
-          line-height: 1.2;
-        }
-
-        .inspiration-content p {
-          font-size: 1.2rem;
-          color: var(--text-muted);
-          margin-bottom: 2rem;
-          line-height: 1.8;
-        }
-
-        .features-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          margin-top: 2rem;
-        }
-
-        .feature-item {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          padding: 1rem;
-          background: rgba(0, 191, 255, 0.05);
-          border-radius: 12px;
-          border: 1px solid rgba(0, 191, 255, 0.1);
-          transition: all 0.3s ease;
-        }
-
-        .feature-item:hover {
-          background: rgba(0, 191, 255, 0.1);
-          transform: translateX(10px);
-        }
-
-        .feature-icon {
-          width: 50px;
-          height: 50px;
-          border-radius: 12px;
-          background: var(--gradient-primary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-size: 1.2rem;
-        }
-
-        .feature-text {
-          flex: 1;
-        }
-
-        .feature-title {
-          font-weight: 600;
-          color: var(--text-light);
-          margin-bottom: 0.25rem;
-        }
-
-        .feature-desc {
-          color: var(--text-muted);
-          font-size: 0.9rem;
-        }
-
         .auth-card {
-          background: rgba(26, 29, 46, 0.9);
+          background: rgba(255, 255, 255, 0.1);
           backdrop-filter: blur(20px);
-          border: 1px solid rgba(0, 191, 255, 0.3);
+          border: 1px solid rgba(221, 244, 231, 0.3);
           border-radius: 25px;
           padding: 3rem;
           width: 100%;
@@ -484,7 +411,7 @@ const AuthPage = () => {
 
         .auth-card:hover {
           transform: translateY(-8px);
-          box-shadow: 0 35px 80px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 191, 255, 0.6);
+          box-shadow: 0 35px 80px rgba(0, 0, 0, 0.4), 0 0 40px rgba(103, 192, 144, 0.6);
         }
 
         .auth-card::before {
@@ -504,24 +431,13 @@ const AuthPage = () => {
           left: -50%;
           width: 200%;
           height: 200%;
-          background: conic-gradient(from 0deg, transparent, rgba(0, 191, 255, 0.1), transparent, rgba(65, 105, 225, 0.1), transparent);
+          background: conic-gradient(from 0deg, transparent, rgba(103, 192, 144, 0.1), transparent, rgba(38, 102, 127, 0.1), transparent);
           animation: rotate 20s linear infinite;
           z-index: -1;
         }
 
         @keyframes rotate {
           100% { transform: rotate(360deg); }
-        }
-
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-60px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-          }
         }
 
         @keyframes slideInRight {
@@ -553,7 +469,7 @@ const AuthPage = () => {
         }
 
         .auth-subtitle {
-          color: var(--text-muted);
+          color: var(--text-light);
           font-size: 1.2rem;
           font-weight: 500;
         }
@@ -571,8 +487,8 @@ const AuthPage = () => {
         .form-input {
           width: 100%;
           padding: 1.2rem 1.2rem 1.2rem 3.5rem;
-          background: rgba(10, 14, 26, 0.8);
-          border: 2px solid rgba(0, 191, 255, 0.2);
+          background: rgba(18, 65, 112, 0.8);
+          border: 2px solid rgba(221, 244, 231, 0.2);
           border-radius: 15px;
           color: var(--text-light);
           font-size: 1.1rem;
@@ -582,10 +498,10 @@ const AuthPage = () => {
 
         .form-input:focus {
           outline: none;
-          border-color: var(--accent-blue);
-          box-shadow: 0 0 0 4px rgba(0, 191, 255, 0.25);
+          border-color: var(--primary-green);
+          box-shadow: 0 0 0 4px rgba(103, 192, 144, 0.25);
           transform: translateY(-3px);
-          background: rgba(10, 14, 26, 0.95);
+          background: rgba(18, 65, 112, 0.95);
         }
 
         .form-input::placeholder {
@@ -598,13 +514,13 @@ const AuthPage = () => {
           left: 1.2rem;
           top: 50%;
           transform: translateY(-50%);
-          color: var(--accent-cyan);
+          color: var(--primary-green);
           font-size: 1.1rem;
           transition: all 0.4s ease;
         }
 
         .form-group:focus-within .form-input-icon {
-          color: var(--accent-blue);
+          color: var(--primary-light);
           transform: translateY(-50%) scale(1.15);
         }
 
@@ -627,12 +543,12 @@ const AuthPage = () => {
           justify-content: center;
           gap: 0.8rem;
           text-transform: uppercase;
-          box-shadow: 0 8px 25px rgba(0, 191, 255, 0.3);
+          box-shadow: 0 8px 25px rgba(103, 192, 144, 0.3);
         }
 
         .auth-btn:hover:not(:disabled) {
           transform: translateY(-4px);
-          box-shadow: 0 15px 35px rgba(0, 191, 255, 0.4);
+          box-shadow: 0 15px 35px rgba(103, 192, 144, 0.4);
           letter-spacing: 1.2px;
         }
 
@@ -648,14 +564,14 @@ const AuthPage = () => {
         .auth-toggle {
           text-align: center;
           margin-top: 2.5rem;
-          color: var(--text-muted);
+          color: var(--text-light);
           font-size: 1.1rem;
         }
 
         .auth-toggle-btn {
           background: none;
           border: none;
-          color: var(--accent-blue);
+          color: var(--primary-light);
           cursor: pointer;
           font-weight: 700;
           text-decoration: underline;
@@ -666,8 +582,8 @@ const AuthPage = () => {
         }
 
         .auth-toggle-btn:hover {
-          color: var(--accent-light-blue);
-          background: rgba(0, 191, 255, 0.1);
+          color: var(--primary-green);
+          background: rgba(221, 244, 231, 0.1);
           text-decoration: none;
         }
 
@@ -694,7 +610,7 @@ const AuthPage = () => {
 
         .floating-icon {
           position: absolute;
-          color: var(--accent-cyan);
+          color: var(--primary-green);
           animation: floatIcon 6s ease-in-out infinite;
           z-index: -1;
           opacity: 0.6;
@@ -705,7 +621,7 @@ const AuthPage = () => {
         .floating-icon:hover {
           opacity: 1;
           transform: scale(1.3);
-          color: var(--accent-light-blue);
+          color: var(--primary-light);
         }
 
         .floating-icon:nth-child(1) { top: 15%; right: 10%; animation-delay: 0s; }
@@ -750,10 +666,6 @@ const AuthPage = () => {
             gap: 3rem;
           }
           
-          .inspiration-panel {
-            max-width: 100%;
-          }
-          
           .atom-container {
             display: none;
           }
@@ -764,13 +676,8 @@ const AuthPage = () => {
             padding: 1rem;
           }
           
-          .inspiration-panel,
           .auth-card {
             padding: 2rem;
-          }
-          
-          .inspiration-content h2 {
-            font-size: 2.2rem;
           }
           
           .auth-logo {
@@ -779,13 +686,8 @@ const AuthPage = () => {
         }
 
         @media (max-width: 576px) {
-          .inspiration-panel,
           .auth-card {
             padding: 1.5rem;
-          }
-          
-          .inspiration-content h2 {
-            font-size: 1.8rem;
           }
           
           .auth-logo {
@@ -818,60 +720,6 @@ const AuthPage = () => {
         </div>
 
         <div className="main-content">
-          {/* Inspiration Panel */}
-          <div className="inspiration-panel">
-            <div className="inspiration-content">
-              <h2>Transform Your Water Management</h2>
-              <p>
-                Join thousands of companies already revolutionizing their water footprint with 
-                AI-powered insights, real-time monitoring, and sustainable solutions that drive 
-                both environmental impact and business growth.
-              </p>
-              
-              <div className="features-list">
-                <div className="feature-item">
-                  <div className="feature-icon">
-                    <i className="fas fa-chart-area"></i>
-                  </div>
-                  <div className="feature-text">
-                    <div className="feature-title">Real-Time Analytics</div>
-                    <div className="feature-desc">Monitor water usage patterns and optimize consumption instantly</div>
-                  </div>
-                </div>
-                
-                <div className="feature-item">
-                  <div className="feature-icon">
-                    <i className="fas fa-seedling"></i>
-                  </div>
-                  <div className="feature-text">
-                    <div className="feature-title">Sustainability Goals</div>
-                    <div className="feature-desc">Achieve your environmental targets with data-driven strategies</div>
-                  </div>
-                </div>
-                
-                <div className="feature-item">
-                  <div className="feature-icon">
-                    <i className="fas fa-coins"></i>
-                  </div>
-                  <div className="feature-text">
-                    <div className="feature-title">Cost Reduction</div>
-                    <div className="feature-desc">Reduce operational costs by up to 40% with smart water management</div>
-                  </div>
-                </div>
-                
-                <div className="feature-item">
-                  <div className="feature-icon">
-                    <i className="fas fa-shield-alt"></i>
-                  </div>
-                  <div className="feature-text">
-                    <div className="feature-title">Compliance Assurance</div>
-                    <div className="feature-desc">Stay ahead of regulations with automated compliance monitoring</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Auth Card */}
           <div className="auth-card">
             <div className="auth-header">
@@ -995,7 +843,10 @@ const AuthPage = () => {
                   onClick={toggleForm}
                   disabled={isLoading}
                 >
-                  {isLogin ? 'Join HydroMap Pro' : 'Sign In Here'}
+                    
+                  <div>
+                  {isLogin ?'Sign Up Here' : 'Sign In Here'}
+                  </div>
                 </button>
               </p>
             </div>

@@ -1,23 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import * as THREE from 'three';
+
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 const LandingPage = () => {
   const [mapExpanded, setMapExpanded] = useState(false);
   const [countersAnimated, setCountersAnimated] = useState(false);
   const [activeElectrolysis, setActiveElectrolysis] = useState(0);
-  const statsRef = useRef(null);
   const navigate = useNavigate();
   
   // Refs for animations
+  const heroRef = useRef(null);
   const heroContentRef = useRef(null);
   const heroVisualRef = useRef(null);
   const featureCardsRef = useRef([]);
-  const statsRefs = useRef([]);
+  const statsRef = useRef(null);
+  const statsItemsRef = useRef([]);
   const useCasesRef = useRef([]);
   const electrolysisRef = useRef([]);
+  const processStepsRef = useRef([]);
   const ctaRef = useRef(null);
   const mapContainerRef = useRef(null);
   const threeDModelRef = useRef(null);
+  const sectionTitlesRef = useRef([]);
+  const atomsRef = useRef([]);
 
   // Electrolysis methods data
   const electrolysisMethods = [
@@ -46,147 +58,239 @@ const LandingPage = () => {
       disadvantages: ["High operating temperature", "Complex thermal management", "Development stage"]
     }
   ];
-
-  // Create floating hydrogen atoms
-  useEffect(() => {
-    const createHydrogenAtom = () => {
-      const atom = document.createElement('div');
-      const size = Math.random() * 60 + 40;
-      atom.classList.add('hydrogen-atom');
-      atom.style.position = 'fixed';
-      atom.style.width = size + 'px';
-      atom.style.height = size + 'px';
-      atom.style.left = Math.random() * (window.innerWidth - size) + 'px';
-      atom.style.top = window.innerHeight + 'px';
-      atom.style.pointerEvents = 'none';
-      atom.style.zIndex = '1';
-      atom.style.opacity = '0';
+// Add this to your existing useEffect hooks
+useEffect(() => {
+  // Initialize Three.js animation for the hydrogen network
+  const initThreeJS = () => {
+    const canvas = document.querySelector('.hydrogen-canvas');
+    if (!canvas) return;
+    
+    // Simplified Three.js setup (you would need to import Three.js)
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas, 
+      alpha: true,
+      antialias: true 
+    });
+    renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+    
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75, 
+      canvas.offsetWidth / canvas.offsetHeight, 
+      0.1, 
+      1000
+    );
+    camera.position.z = 5;
+    
+    // Create hydrogen molecules
+    const molecules = [];
+    for (let i = 0; i < 20; i++) {
+      const geometry = new THREE.SphereGeometry(0.1, 16, 16);
+      const material = new THREE.MeshBasicMaterial({ 
+        color: 0x67C090,
+        transparent: true,
+        opacity: 0.6
+      });
+      const molecule = new THREE.Mesh(geometry, material);
       
-      // Create proton (nucleus)
-      const proton = document.createElement('div');
-      proton.classList.add('proton');
-      proton.style.position = 'absolute';
-      proton.style.top = '50%';
-      proton.style.left = '50%';
-      proton.style.transform = 'translate(-50%, -50%)';
-      proton.style.width = '8px';
-      proton.style.height = '8px';
-      proton.style.background = 'radial-gradient(circle, #ff6b6b 0%, #e55656 100%)';
-      proton.style.borderRadius = '50%';
-      proton.style.boxShadow = '0 0 10px rgba(255, 107, 107, 0.8)';
+      // Random position
+      molecule.position.x = (Math.random() - 0.5) * 10;
+      molecule.position.y = (Math.random() - 0.5) * 10;
+      molecule.position.z = (Math.random() - 0.5) * 5;
       
-      // Create electron orbit and electron
-      const orbit = document.createElement('div');
-      orbit.classList.add('electron-orbit');
-      orbit.style.position = 'absolute';
-      orbit.style.top = '50%';
-      orbit.style.left = '50%';
-      orbit.style.transform = 'translate(-50%, -50%)';
-      orbit.style.width = size * 0.8 + 'px';
-      orbit.style.height = size * 0.8 + 'px';
-      orbit.style.border = '1px solid rgba(103, 192, 144, 0.3)';
-      orbit.style.borderRadius = '50%';
-      orbit.style.animation = `atomRotate ${3 + Math.random() * 4}s linear infinite`;
+      scene.add(molecule);
+      molecules.push(molecule);
+    }
+    
+    // Animation loop
+    const animate = () => {
+      requestAnimationFrame(animate);
       
-      const electron = document.createElement('div');
-      electron.classList.add('electron');
-      electron.style.position = 'absolute';
-      electron.style.top = '-3px';
-      electron.style.left = '50%';
-      electron.style.transform = 'translateX(-50%)';
-      electron.style.width = '6px';
-      electron.style.height = '6px';
-      electron.style.background = 'radial-gradient(circle, #67C090 0%, #26667F 100%)';
-      electron.style.borderRadius = '50%';
-      electron.style.boxShadow = '0 0 8px rgba(103, 192, 144, 0.8)';
+      // Rotate molecules
+      molecules.forEach(molecule => {
+        molecule.rotation.x += 0.01;
+        molecule.rotation.y += 0.02;
+      });
       
-      orbit.appendChild(electron);
-      atom.appendChild(proton);
-      atom.appendChild(orbit);
-      
-      document.getElementById('atom-container')?.appendChild(atom);
-      
-      // Animate the atom
-      const tl = {
-        opacity: 0.6,
-        y: -(window.innerHeight + size + 100),
-        x: (Math.random() - 0.5) * 300,
-        rotation: Math.random() * 360,
-        duration: 15 + Math.random() * 10
-      };
-      
-      // Simple animation using CSS transitions
-      atom.style.transition = `all ${tl.duration}s linear`;
-      atom.style.opacity = tl.opacity;
-      atom.style.transform = `translateY(${tl.y}px) translateX(${tl.x}px) rotate(${tl.rotation}deg)`;
-      
-      setTimeout(() => {
-        if (atom.parentNode) atom.remove();
-      }, tl.duration * 1000);
+      renderer.render(scene, camera);
     };
-
-    const interval = setInterval(createHydrogenAtom, 800);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Background atoms animation
+    
+    animate();
+    
+    // Handle resize
+    const handleResize = () => {
+      camera.aspect = canvas.offsetWidth / canvas.offsetHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  };
+  
+  // Initialize if Three.js is available
+  if (typeof THREE !== 'undefined') {
+    initThreeJS();
+  }
+}, []);
+  // Initialize animations with GSAP
   useEffect(() => {
-    const createBackgroundAtoms = () => {
-      const atomsContainer = document.getElementById('background-atoms');
-      if (!atomsContainer) return;
-      
-      for (let i = 0; i < 8; i++) {
-        const atom = document.createElement('div');
-        atom.classList.add('bg-hydrogen-atom');
-        atom.style.position = 'absolute';
-        atom.style.width = '80px';
-        atom.style.height = '80px';
-        atom.style.left = Math.random() * 100 + '%';
-        atom.style.top = Math.random() * 100 + '%';
-        atom.style.opacity = '0.1';
-        atom.style.pointerEvents = 'none';
-        
-        // Create proton
-        const proton = document.createElement('div');
-        proton.style.position = 'absolute';
-        proton.style.top = '50%';
-        proton.style.left = '50%';
-        proton.style.transform = 'translate(-50%, -50%)';
-        proton.style.width = '6px';
-        proton.style.height = '6px';
-        proton.style.background = '#ff6b6b';
-        proton.style.borderRadius = '50%';
-        
-        // Create orbit and electron
-        const orbit = document.createElement('div');
-        orbit.style.position = 'absolute';
-        orbit.style.top = '50%';
-        orbit.style.left = '50%';
-        orbit.style.transform = 'translate(-50%, -50%)';
-        orbit.style.width = '70px';
-        orbit.style.height = '70px';
-        orbit.style.border = '1px solid #67C090';
-        orbit.style.borderRadius = '50%';
-        orbit.style.animation = `atomRotate ${8 + Math.random() * 6}s linear infinite`;
-        
-        const electron = document.createElement('div');
-        electron.style.position = 'absolute';
-        electron.style.top = '-2px';
-        electron.style.left = '50%';
-        electron.style.transform = 'translateX(-50%)';
-        electron.style.width = '4px';
-        electron.style.height = '4px';
-        electron.style.background = '#67C090';
-        electron.style.borderRadius = '50%';
-        
-        orbit.appendChild(electron);
-        atom.appendChild(proton);
-        atom.appendChild(orbit);
-        atomsContainer.appendChild(atom);
+    // Hero section animation
+    gsap.fromTo(heroContentRef.current, 
+      { opacity: 0, y: 50 },
+      { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
+    );
+    
+    gsap.fromTo(heroVisualRef.current, 
+      { opacity: 0, scale: 0.8, rotationY: -15 },
+      { opacity: 1, scale: 1, rotationY: 0, duration: 1.2, ease: "power3.out", delay: 0.3 }
+    );
+
+    // Animate floating atoms
+    atomsRef.current.forEach((atom, i) => {
+      gsap.to(atom, {
+        y: -20,
+        rotation: 360,
+        duration: 3 + i,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut"
+      });
+    });
+
+    // Section title animations
+    sectionTitlesRef.current.forEach(title => {
+      gsap.fromTo(title, 
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          scrollTrigger: {
+            trigger: title,
+            start: "top 80%",
+            toggleActions: "play none none none"
+          }
+        }
+      );
+    });
+
+    // Feature cards animation
+    featureCardsRef.current.forEach((card, i) => {
+      if (card) {
+        gsap.fromTo(card, 
+          { opacity: 0, y: 50 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            delay: i * 0.2,
+            scrollTrigger: {
+              trigger: card,
+              start: "top 85%",
+              toggleActions: "play none none none"
+            }
+          }
+        );
       }
-    };
+    });
 
-    createBackgroundAtoms();
+    // Stats animation
+    gsap.fromTo(statsRef.current, 
+      { opacity: 0 },
+      {
+        opacity: 1,
+        duration: 1,
+        scrollTrigger: {
+          trigger: statsRef.current,
+          start: "top 80%",
+          toggleActions: "play none none none"
+        },
+        onEnter: () => animateCounters()
+      }
+    );
+
+    // Use cases animation
+    useCasesRef.current.forEach((item, i) => {
+      if (item) {
+        gsap.fromTo(item, 
+          { opacity: 0, x: -30 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.8,
+            delay: i * 0.15,
+            scrollTrigger: {
+              trigger: item,
+              start: "top 85%",
+              toggleActions: "play none none none"
+            }
+          }
+        );
+      }
+    });
+
+    // Electrolysis methods animation
+    electrolysisRef.current.forEach((method, i) => {
+      if (method) {
+        gsap.fromTo(method, 
+          { opacity: 0, y: 40 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            delay: i * 0.2,
+            scrollTrigger: {
+              trigger: method,
+              start: "top 85%",
+              toggleActions: "play none none none"
+            }
+          }
+        );
+      }
+    });
+
+    // Process steps animation
+    processStepsRef.current.forEach((step, i) => {
+      if (step) {
+        gsap.fromTo(step, 
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            delay: i * 0.15,
+            scrollTrigger: {
+              trigger: step,
+              start: "top 85%",
+              toggleActions: "play none none none"
+            }
+          }
+        );
+      }
+    });
+
+    // CTA animation
+    gsap.fromTo(ctaRef.current, 
+      { opacity: 0 },
+      {
+        opacity: 1,
+        duration: 1,
+        scrollTrigger: {
+          trigger: ctaRef.current,
+          start: "top 80%",
+          toggleActions: "play none none none"
+        }
+      }
+    );
+
+    // Clean up
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
   }, []);
 
   // Electrolysis carousel effect
@@ -195,50 +299,6 @@ const LandingPage = () => {
       setActiveElectrolysis(prev => (prev + 1) % electrolysisMethods.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
-
-  // Hero visual 3D hydrogen molecule
-  useEffect(() => {
-    if (threeDModelRef.current) {
-      const molecule = threeDModelRef.current;
-      let rotation = 0;
-      
-      const animate = () => {
-        rotation += 0.5;
-        molecule.style.transform = `translate(-50%, -50%) rotateY(${rotation}deg)`;
-        requestAnimationFrame(animate);
-      };
-      
-      animate();
-    }
-  }, []);
-
-  // Initialize animations on scroll
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
-        }
-      });
-    }, observerOptions);
-
-    // Observe all animated elements
-    const animatedElements = document.querySelectorAll('.animate-on-scroll');
-    animatedElements.forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(50px)';
-      el.style.transition = 'all 0.8s ease';
-      observer.observe(el);
-    });
-
-    return () => observer.disconnect();
   }, []);
 
   // Counter animation
@@ -265,26 +325,6 @@ const LandingPage = () => {
     setCountersAnimated(true);
   };
 
-  // Intersection Observer for counter animation
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            animateCounters();
-          }
-        });
-      },
-      { threshold: 0.5, rootMargin: '0px 0px -100px 0px' }
-    );
-
-    if (statsRef.current) {
-      observer.observe(statsRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [countersAnimated]);
-
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -298,16 +338,24 @@ const LandingPage = () => {
 
   const handleButtonClick = (e) => {
     const button = e.currentTarget;
-    button.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-      button.style.transform = 'scale(1)';
-      navigate('/auth');
-    }, 150);
+    gsap.to(button, {
+      scale: 0.95,
+      duration: 0.1,
+      yoyo: true,
+      repeat: 1,
+      onComplete: () => {
+        navigate('/auth');
+      }
+    });
   };
 
   // Component for creating hydrogen atoms
-  const HydrogenAtom = ({ size = 40, className = "" }) => (
-    <div className={`hydrogen-atom ${className}`} style={{ width: size, height: size }}>
+  const HydrogenAtom = ({ size = 40, className = "", style = {} }) => (
+    <div 
+      className={`hydrogen-atom ${className}`} 
+      style={{ width: size, height: size, ...style }}
+      ref={el => atomsRef.current.push(el)}
+    >
       <div className="proton" style={{
         width: size * 0.2 + 'px',
         height: size * 0.2 + 'px',
@@ -335,18 +383,23 @@ const LandingPage = () => {
     <>
       <style>{`
         @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         :root {
           --primary-light: #DDF4E7;
           --primary-green: #67C090;
           --primary-teal: #26667F;
           --primary-dark: #124170;
+          --accent-purple: #8A4FFF;
+          --accent-pink: #FF6B9D;
           --text-dark: #1a1a1a;
           --text-light: #ffffff;
           --text-muted: #6c757d;
           --gradient-primary: linear-gradient(135deg, #67C090 0%, #26667F 100%);
           --gradient-secondary: linear-gradient(135deg, #26667F 0%, #124170 100%);
           --gradient-accent: linear-gradient(135deg, #DDF4E7 0%, #67C090 100%);
+          --gradient-hero: linear-gradient(135deg, #8A4FFF 0%, #26667F 50%, #67C090 100%);
+          --gradient-feature: linear-gradient(135deg, #FF6B9D 0%, #8A4FFF 100%);
           --shadow-primary: 0 10px 30px rgba(18, 65, 112, 0.15);
           --shadow-hover: 0 20px 40px rgba(18, 65, 112, 0.25);
           --border-radius: 16px;
@@ -360,7 +413,7 @@ const LandingPage = () => {
         }
 
         body {
-          background: linear-gradient(135deg, #f8fffe 0%, #DDF4E7 100%);
+          background: linear-gradient(135deg, #f8fffe 0%, #f0f9f4 100%);
           color: var(--text-dark);
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           line-height: 1.6;
@@ -378,33 +431,9 @@ const LandingPage = () => {
           overflow: hidden;
         }
 
-        #background-atoms {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          pointer-events: none;
-          z-index: 0;
-          overflow: hidden;
-        }
-
         .hydrogen-atom {
           position: absolute;
           pointer-events: none;
-        }
-
-        .bg-hydrogen-atom {
-          position: absolute;
-          pointer-events: none;
-          animation: floatAtom 20s ease-in-out infinite;
-        }
-
-        @keyframes floatAtom {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          25% { transform: translateY(-20px) rotate(90deg); }
-          50% { transform: translateY(0px) rotate(180deg); }
-          75% { transform: translateY(20px) rotate(270deg); }
         }
 
         .proton {
@@ -453,11 +482,11 @@ const LandingPage = () => {
           width: 100%;
           height: 100%;
           z-index: -2;
-          opacity: 0.03;
+          opacity: 0.05;
           background: 
-            radial-gradient(circle at 20% 50%, #67C090 0%, transparent 50%),
+            radial-gradient(circle at 20% 50%, #8A4FFF 0%, transparent 50%),
             radial-gradient(circle at 80% 20%, #26667F 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, #124170 0%, transparent 50%);
+            radial-gradient(circle at 40% 80%, #FF6B9D 0%, transparent 50%);
           animation: float 30s ease-in-out infinite;
         }
 
@@ -480,20 +509,52 @@ const LandingPage = () => {
           position: relative;
           overflow: hidden;
           padding: 100px 0 80px;
-          background: linear-gradient(135deg, #ffffff 0%, #DDF4E7 50%, #f0f9f4 100%);
         }
 
         .hero::before {
-          content: '';
+          content: "";
           position: absolute;
           top: 0;
+          left: 0;
           right: 0;
-          width: 50%;
-          height: 100%;
-          background: 
-            linear-gradient(135deg, rgba(103, 192, 144, 0.1) 0%, rgba(38, 102, 127, 0.1) 100%),
-            url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%2367C090" stroke-width="0.5" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+          bottom: 0;
+          background-image: url('./images/plant.gif');
+          background-size: cover;
+          background-position: center;
+          filter: blur(2px);         
+          transform: scale(1.1);     
+          z-index: -1;                
+        }
+
+        .hero::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.64);
           z-index: -1;
+        }
+
+
+        @keyframes heroBlob {
+          0%, 100% { 
+            transform: translate(0, 0) rotate(0deg); 
+            border-radius: 50%;
+          }
+          25% { 
+            transform: translate(-50px, 50px) rotate(90deg); 
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+          }
+          50% { 
+            transform: translate(0, 100px) rotate(180deg); 
+            border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+          }
+          75% { 
+            transform: translate(50px, 50px) rotate(270deg); 
+            border-radius: 40% 60%;
+          }
         }
 
         .hero-content {
@@ -512,14 +573,16 @@ const LandingPage = () => {
           margin-bottom: 1.5rem;
           line-height: 1.1;
           letter-spacing: -0.02em;
+          text-shadow : 0px 0px 1px rgba(0, 199, 30, 0.34);
         }
 
         .hero-content p {
           font-size: 1.25rem;
-          color: var(--text-muted);
+          color: white;
           margin-bottom: 2.5rem;
           line-height: 1.6;
           font-weight: 400;
+          text-shadow : 0px 0px 10px black;
         }
 
         .btn-primary-custom {
@@ -539,6 +602,21 @@ const LandingPage = () => {
           cursor: pointer;
         }
 
+        .btn-primary-custom::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: 0.5s;
+        }
+
+        .btn-primary-custom:hover::before {
+          left: 100%;
+        }
+
         .btn-primary-custom:hover {
           transform: translateY(-3px);
           box-shadow: var(--shadow-hover);
@@ -547,16 +625,18 @@ const LandingPage = () => {
 
         .btn-outline-custom {
           border: 2px solid var(--primary-teal);
-          color: var(--primary-teal);
+          color: rgb(255,255,255);
           background: transparent;
           padding: 16px 36px;
           border-radius: 50px;
-          font-weight: 600;
+          font-weight: 800;
           letter-spacing: 0.5px;
           transition: all 0.3s ease;
           position: relative;
           overflow: hidden;
           cursor: pointer;
+          box-shadow :inset 0px 0px 20px var(--primary-teal), 0px 0px 20px var(--primary-teal);
+         
         }
 
         .btn-outline-custom:hover {
@@ -655,15 +735,6 @@ const LandingPage = () => {
           100% { transform: rotate(600deg) translateX(100px) rotate(-600deg); }
         }
 
-        .map-overlay {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          text-align: center;
-          z-index: 10;
-        }
-
         .pulse-dot {
           width: 12px;
           height: 12px;
@@ -698,6 +769,20 @@ const LandingPage = () => {
           background: var(--text-light);
           position: relative;
           overflow: hidden;
+        }
+
+        .features::before {
+          content: '';
+          position: absolute;
+          top: -100px;
+          left: -100px;
+          width: 300px;
+          height: 300px;
+          background: var(--gradient-feature);
+          border-radius: 50%;
+          filter: blur(80px);
+          opacity: 0.05;
+          z-index: 0;
         }
 
         .section-title {
@@ -741,7 +826,7 @@ const LandingPage = () => {
 
         .feature-card {
           background: var(--text-light);
-          border: 1px solid rgba(103, 192, 144, 0.2);
+          border: 1px solid rgba(103, 192, 144, 0.1);
           border-radius: var(--border-radius-lg);
           padding: 40px 30px;
           text-align: center;
@@ -750,7 +835,8 @@ const LandingPage = () => {
           position: relative;
           overflow: hidden;
           transform-style: preserve-3d;
-          box-shadow: 0 5px 20px rgba(18, 65, 112, 0.08);
+          box-shadow: 0 5px 25px rgba(18, 65, 112, 0.06);
+          backdrop-filter: blur(10px);
         }
 
         .feature-card::before {
@@ -767,9 +853,9 @@ const LandingPage = () => {
         }
 
         .feature-card:hover {
-          transform: translateY(-8px);
+          transform: translateY(-8px) scale(1.02);
           border-color: var(--primary-green);
-          box-shadow: var(--shadow-hover);
+          box-shadow: 0 20px 40px rgba(103, 192, 144, 0.15);
         }
 
         .feature-card:hover::before {
@@ -870,7 +956,7 @@ const LandingPage = () => {
 
         .use-cases {
           padding: 120px 0;
-          background: linear-gradient(135deg, #f8fffe 0%, #DDF4E7 100%);
+          background: linear-gradient(135deg, #f8fffe 0%, #f0f9f4 100%);
           position: relative;
           overflow: hidden;
         }
@@ -884,7 +970,7 @@ const LandingPage = () => {
           transition: all 0.4s ease;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 5px 20px rgba(18, 65, 112, 0.08);
+          box-shadow: 0 5px 25px rgba(18, 65, 112, 0.06);
         }
 
         .use-case-item:hover {
@@ -974,6 +1060,7 @@ const LandingPage = () => {
         .electrolysis-method.active {
           border-color: var(--primary-green);
           background: rgba(103, 192, 144, 0.1);
+          transform: translateY(-5px);
         }
 
         .method-atom {
@@ -1065,7 +1152,7 @@ const LandingPage = () => {
 
         .process-flow {
           padding: 80px 0;
-          background: linear-gradient(135deg, #f8fffe 0%, #DDF4E7 100%);
+          background: linear-gradient(135deg, #f8fffe 0%, #f0f9f4 100%);
           position: relative;
           overflow: hidden;
         }
@@ -1075,7 +1162,7 @@ const LandingPage = () => {
           border-radius: var(--border-radius-lg);
           padding: 30px;
           text-align: center;
-          box-shadow: 0 5px 20px rgba(18, 65, 112, 0.08);
+          box-shadow: 0 5px 25px rgba(18, 65, 112, 0.06);
           position: relative;
           transition: all 0.3s ease;
         }
@@ -1218,6 +1305,7 @@ const LandingPage = () => {
           background: var(--text-light);
           position: relative;
           overflow: hidden;
+          
         }
 
         .interactive-map {
@@ -1387,10 +1475,14 @@ const LandingPage = () => {
 
         @media (max-width: 768px) {
           .hero {
-            padding: 80px 0 60px;
-            min-height: auto;
-          }
-          
+              padding: 80px 0 60px;
+              min-height: auto;
+              background-image: url('./images/dashboard_hero_image.webp');
+              background-size: cover;
+              background-position: center; 
+              background-color:transparent;
+            }
+                      
           .hero-content h1 { 
             font-size: 2.8rem; 
           }
@@ -1473,11 +1565,10 @@ const LandingPage = () => {
       </style>
      
       <div id="atom-container"></div>
-      <div id="background-atoms"></div>
       <div className="bg-animation"></div>
-
+      
       {/* Hero Section */}
-      <section className="hero">
+      <section className="hero" ref={heroRef}>
         <div className="container">
           <div className="row align-items-center">
             <div className="col-lg-6">
@@ -1486,32 +1577,77 @@ const LandingPage = () => {
                 <p>Transforming renewable energy into sustainable fuel solutions for a cleaner tomorrow. Our advanced technology produces green hydrogen efficiently and cost-effectively.</p>
                 <div className="d-flex gap-3 flex-wrap">
                   <button className="btn-primary-custom" onClick={handleButtonClick}>
-                    Get Started <i className="fas fa-arrow-right ms-2"></i>
+                    Start From strach <i className="fas fa-arrow-right ms-2"></i>
                   </button>
                   <button className="btn-outline-custom" onClick={() => scrollToSection('features')}>
-                    Learn More <i className="fas fa-book-open ms-2"></i>
+                    convert existing <i className="fas fa-book-open ms-2"></i>
                   </button>
                 </div>
               </div>
             </div>
             <div className="col-lg-6">
-              <div className="hero-visual" ref={heroVisualRef}>
-                <div className="map-preview">
-                  <div className="hydrogen-3d-model" ref={threeDModelRef}>
-                    <div className="model-electron"></div>
-                    <div className="model-electron"></div>
-                    <div className="model-electron"></div>
-                  </div>
-                  <div className="pulse-dot"></div>
-                  <div className="pulse-dot"></div>
-                  <div className="pulse-dot"></div>
-                  <div className="map-overlay">
-                    <h3>Global Hydrogen Network</h3>
-                    <p>Interactive production facilities map</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+  <div className="hero-visual" ref={heroVisualRef}>
+    <div className="map-preview">
+      {/* Enhanced Hydrogen Network Animation */}
+      <div className="hydrogen-network">
+        {/* Canvas for Three.js animation */}
+        <canvas className="hydrogen-canvas" ref={threeDModelRef}></canvas>
+        
+        {/* Network connections */}
+        <div className="network-connections">
+          <div className="connection-line" style={{top: '30%', left: '40%', width: '25%', transform: 'rotate(30deg)'}}></div>
+          <div className="connection-line" style={{top: '60%', left: '65%', width: '20%', transform: 'rotate(-15deg)'}}></div>
+          <div className="connection-line" style={{top: '45%', left: '25%', width: '15%', transform: 'rotate(60deg)'}}></div>
+        </div>
+        
+        {/* Facility nodes */}
+        <div className="facility-node" style={{top: '30%', left: '40%'}}>
+          <div className="node-pulse"></div>
+          <div className="node-icon">🏭</div>
+          <div className="node-tooltip">Production Facility</div>
+        </div>
+        
+        <div className="facility-node" style={{top: '60%', left: '65%'}}>
+          <div className="node-pulse"></div>
+          <div className="node-icon">⚡</div>
+          <div className="node-tooltip">Energy Plant</div>
+        </div>
+        
+        <div className="facility-node" style={{top: '45%', left: '25%'}}>
+          <div className="node-pulse"></div>
+          <div className="node-icon">🔬</div>
+          <div className="node-tooltip">Research Center</div>
+        </div>
+        
+        {/* Energy particles moving between nodes */}
+        <div className="energy-flow">
+          <div className="energy-particle" style={{'--delay': '0s', '--path': 'node1-node2'}}></div>
+          <div className="energy-particle" style={{'--delay': '1.5s', '--path': 'node2-node3'}}></div>
+          <div className="energy-particle" style={{'--delay': '3s', '--path': 'node3-node1'}}></div>
+        </div>
+        
+        {/* Data points floating around */}
+        <div className="data-point" style={{top: '20%', left: '50%'}}>
+          <div className="data-value">H₂</div>
+        </div>
+        <div className="data-point" style={{top: '70%', left: '30%'}}>
+          <div className="data-value">O₂</div>
+        </div>
+        <div className="data-point" style={{top: '50%', left: '75%'}}>
+          <div className="data-value">H₂O</div>
+        </div>
+      </div>
+      
+      <div className="map-overlay">
+        <h3>Global Hydrogen Network</h3>
+        <p>Interactive production facilities map</p>
+        <button className="explore-btn" onClick={toggleMapView}>
+          {mapExpanded ? 'Collapse View' : 'Explore Network'}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
           </div>
         </div>
       </section>
@@ -1520,12 +1656,12 @@ const LandingPage = () => {
       <section className="features" id="features">
         <div className="container">
           <div className="section-title">
-            <h2>Why Choose Green Hydrogen?</h2>
+            <h2 ref={el => sectionTitlesRef.current[0] = el}>Why Choose Green Hydrogen?</h2>
             <p>Our innovative approach combines cutting-edge technology with sustainable practices to deliver exceptional results</p>
           </div>
           <div className="row">
             <div className="col-md-4">
-              <div className="feature-card animate-on-scroll" ref={el => featureCardsRef.current[0] = el}>
+              <div className="feature-card" ref={el => featureCardsRef.current[0] = el}>
                 <HydrogenAtom className="feature-atom" size={40} />
                 <i className="fas fa-leaf feature-icon"></i>
                 <h3 className="feature-title">Zero Emissions</h3>
@@ -1533,7 +1669,7 @@ const LandingPage = () => {
               </div>
             </div>
             <div className="col-md-4">
-              <div className="feature-card animate-on-scroll" ref={el => featureCardsRef.current[1] = el}>
+              <div className="feature-card" ref={el => featureCardsRef.current[1] = el}>
                 <HydrogenAtom className="feature-atom" size={40} />
                 <i className="fas fa-bolt feature-icon"></i>
                 <h3 className="feature-title">High Efficiency</h3>
@@ -1541,7 +1677,7 @@ const LandingPage = () => {
               </div>
             </div>
             <div className="col-md-4">
-              <div className="feature-card animate-on-scroll" ref={el => featureCardsRef.current[2] = el}>
+              <div className="feature-card" ref={el => featureCardsRef.current[2] = el}>
                 <HydrogenAtom className="feature-atom" size={40} />
                 <i className="fas fa-chart-line feature-icon"></i>
                 <h3 className="feature-title">Cost Effective</h3>
@@ -1557,28 +1693,28 @@ const LandingPage = () => {
         <div className="container">
           <div className="row">
             <div className="col-md-3">
-              <div className="stat-item animate-on-scroll" ref={el => statsRefs.current[0] = el}>
+              <div className="stat-item" ref={el => statsItemsRef.current[0] = el}>
                 <HydrogenAtom className="stat-atom" size={30} />
                 <span className="stat-number">500+</span>
                 <span className="stat-label">Tons Produced</span>
               </div>
             </div>
             <div className="col-md-3">
-              <div className="stat-item animate-on-scroll" ref={el => statsRefs.current[1] = el}>
+              <div className="stat-item" ref={el => statsItemsRef.current[1] = el}>
                 <HydrogenAtom className="stat-atom" size={30} />
                 <span className="stat-number">85%</span>
                 <span className="stat-label">Efficiency Rate</span>
               </div>
             </div>
             <div className="col-md-3">
-              <div className="stat-item animate-on-scroll" ref={el => statsRefs.current[2] = el}>
+              <div className="stat-item" ref={el => statsItemsRef.current[2] = el}>
                 <HydrogenAtom className="stat-atom" size={30} />
                 <span className="stat-number">120+</span>
                 <span className="stat-label">Projects Completed</span>
               </div>
             </div>
             <div className="col-md-3">
-              <div className="stat-item animate-on-scroll" ref={el => statsRefs.current[3] = el}>
+              <div className="stat-item" ref={el => statsItemsRef.current[3] = el}>
                 <HydrogenAtom className="stat-atom" size={30} />
                 <span className="stat-number">2.5M+</span>
                 <span className="stat-label">CO₂ Reduced</span>
@@ -1592,28 +1728,28 @@ const LandingPage = () => {
       <section className="use-cases">
         <div className="container">
           <div className="section-title">
-            <h2>Applications of Green Hydrogen</h2>
+            <h2 ref={el => sectionTitlesRef.current[1] = el}>Applications of Green Hydrogen</h2>
             <p>Discover how green hydrogen is transforming industries across the globe</p>
           </div>
           <div className="row">
             <div className="col-md-6">
-              <div className="use-case-item animate-on-scroll" ref={el => useCasesRef.current[0] = el}>
+              <div className="use-case-item" ref={el => useCasesRef.current[0] = el}>
                 <HydrogenAtom className="use-case-atom" size={35} />
                 <i className="fas fa-car use-case-icon"></i>
                 <h3 className="use-case-title">Transportation Fuel</h3>
                 <p className="use-case-desc">Power fuel cell vehicles with zero emissions and fast refueling capabilities for a sustainable transportation future.</p>
               </div>
-              </div>
+            </div>
             <div className="col-md-6">
-              <div className="use-case-item animate-on-scroll" ref={el => useCasesRef.current[1] = el}>
+              <div className="use-case-item" ref={el => useCasesRef.current[1] = el}>
                 <HydrogenAtom className="use-case-atom" size={35} />
                 <i className="fas fa-industry use-case-icon"></i>
                 <h3 className="use-case-title">Industrial Processes</h3>
                 <p className="use-case-desc">Replace fossil fuels in manufacturing, refining, and chemical production with clean hydrogen alternatives.</p>
-            </div>
               </div>
+            </div>
             <div className="col-md-6">
-              <div className="use-case-item animate-on-scroll" ref={el => useCasesRef.current[2] = el}>
+              <div className="use-case-item" ref={el => useCasesRef.current[2] = el}>
                 <HydrogenAtom className="use-case-atom" size={35} />
                 <i className="fas fa-home use-case-icon"></i>
                 <h3 className="use-case-title">Energy Storage</h3>
@@ -1621,7 +1757,7 @@ const LandingPage = () => {
               </div>
             </div>
             <div className="col-md-6">
-              <div className="use-case-item animate-on-scroll" ref={el => useCasesRef.current[3] = el}>
+              <div className="use-case-item" ref={el => useCasesRef.current[3] = el}>
                 <HydrogenAtom className="use-case-atom" size={35} />
                 <i className="fas fa-plug use-case-icon"></i>
                 <h3 className="use-case-title">Power Generation</h3>
@@ -1636,14 +1772,14 @@ const LandingPage = () => {
       <section className="electrolysis-section">
         <div className="container">
           <div className="section-title">
-            <h2>Advanced Electrolysis Technologies</h2>
+            <h2 ref={el => sectionTitlesRef.current[2] = el}>Advanced Electrolysis Technologies</h2>
             <p>Our cutting-edge methods for producing green hydrogen efficiently</p>
           </div>
           <div className="row">
             {electrolysisMethods.map((method, index) => (
               <div className="col-md-4" key={index}>
                 <div 
-                  className={`electrolysis-method animate-on-scroll ${index === activeElectrolysis ? 'active' : ''}`}
+                  className={`electrolysis-method ${index === activeElectrolysis ? 'active' : ''}`}
                   ref={el => electrolysisRef.current[index] = el}
                 >
                   <HydrogenAtom className="method-atom" size={50} />
@@ -1651,7 +1787,7 @@ const LandingPage = () => {
                     <i className={`${method.icon} method-icon`}></i>
                     <h4 className="method-name">{method.name}</h4>
                     <span className="method-efficiency">{method.efficiency}</span>
-            </div>
+                  </div>
                   <p className="method-description">{method.description}</p>
                   <div className="method-details">
                     <div className="detail-group">
@@ -1669,55 +1805,55 @@ const LandingPage = () => {
                           <li key={i}>{dis}</li>
                         ))}
                       </ul>
-                        </div>
-                      </div>
-                        </div>
-                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
-                        </div>
-                      </div>
+          </div>
+        </div>
       </section>
 
       {/* Process Flow Section */}
       <section className="process-flow">
         <div className="container">
           <div className="section-title">
-            <h2>Our Production Process</h2>
+            <h2 ref={el => sectionTitlesRef.current[3] = el}>Our Production Process</h2>
             <p>From renewable energy to clean hydrogen fuel</p>
-                        </div>
+          </div>
           <div className="row">
             <div className="col-md-3">
-              <div className="process-step animate-on-scroll">
+              <div className="process-step" ref={el => processStepsRef.current[0] = el}>
                 <HydrogenAtom className="process-atom" size={40} />
                 <div className="process-icon">
                   <i className="fas fa-sun"></i>
-                      </div>
+                </div>
                 <h3 className="process-title">Renewable Energy</h3>
                 <p className="process-desc">Harness solar and wind power to generate clean electricity</p>
-                    </div>
-                    </div>
+              </div>
+            </div>
             <div className="col-md-3">
-              <div className="process-step animate-on-scroll">
+              <div className="process-step" ref={el => processStepsRef.current[1] = el}>
                 <HydrogenAtom className="process-atom" size={40} />
                 <div className="process-icon">
                   <i className="fas fa-tint"></i>
-                  </div>
+                </div>
                 <h3 className="process-title">Water Supply</h3>
                 <p className="process-desc">Source and purify water for the electrolysis process</p>
-                      </div>
-                      </div>
+              </div>
+            </div>
             <div className="col-md-3">
-              <div className="process-step animate-on-scroll">
+              <div className="process-step" ref={el => processStepsRef.current[2] = el}>
                 <HydrogenAtom className="process-atom" size={40} />
                 <div className="process-icon">
                   <i className="fas fa-bolt"></i>
-                      </div>
+                </div>
                 <h3 className="process-title">Electrolysis</h3>
                 <p className="process-desc">Split water molecules into hydrogen and oxygen using electricity</p>
-                    </div>
-                  </div>
+              </div>
+            </div>
             <div className="col-md-3">
-              <div className="process-step animate-on-scroll">
+              <div className="process-step" ref={el => processStepsRef.current[3] = el}>
                 <HydrogenAtom className="process-atom" size={40} />
                 <div className="process-icon">
                   <i className="fas fa-gas-pump"></i>
@@ -1734,7 +1870,7 @@ const LandingPage = () => {
       <section className="interactive-map-section">
         <div className="container">
           <div className="section-title">
-            <h2>Global Hydrogen Network</h2>
+            <h2 ref={el => sectionTitlesRef.current[4] = el}>Global Hydrogen Network</h2>
             <p>Explore our worldwide production facilities and distribution network</p>
           </div>
           <div className="interactive-map">
@@ -1765,7 +1901,7 @@ const LandingPage = () => {
           <p>Start your journey towards sustainable energy solutions today. Our team of experts is ready to help you implement green hydrogen technology for your business needs.</p>
           <button className="btn-primary-custom" onClick={handleButtonClick}>
             Get Started Now <i className="fas fa-arrow-right ms-2"></i>
-            </button>
+          </button>
         </div>
       </section>
 
